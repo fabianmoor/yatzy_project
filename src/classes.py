@@ -142,10 +142,16 @@ class Game:
     def read_file(self):
         """Read the file to print out the ScoreCard"""
         self.dictionary = {}
-        if os.path.isfile("round_names.txt"):
-            with open("round_names.txt", "r", encoding = "utf8") as f:
+        path = os.getcwd()
+        path += "/yatzy/src/round_names.txt"
+        print(path)
+        if os.path.isfile(path):
+            with open(path, "r", encoding = "utf8") as f:
+                print("File successfully opened!")
                 for line in f:
-                    self.dictionary[line] = 0
+                    self.dictionary[line.strip()] = 0
+        else:
+            print("File not found!")
         return self.dictionary
 
     def play_game(self):
@@ -167,8 +173,10 @@ class Game:
                         player.roll_unlocked()
                         print(player.values())
                     else:
+                        for value in self.dictionary:
+                            print(f"{value:<18} -- {self.dictionary[value]}")
                         break
-        print(self.dictionary)
+        
 
 def clear_screen():
     """Clear the terminal"""
