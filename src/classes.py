@@ -37,7 +37,6 @@ class Player:
         """Reset the diceset for the new player round"""
         for dice in self.dice:
             dice.unlock()
-            dice.value = None
 
 class Dice:
     """Class of dice, defines the functions of the dice such as roll, lock,
@@ -49,7 +48,7 @@ class Dice:
 
     def roll(self):
         """Roll the dice"""
-        if self.locked == False:
+        if self.locked is False:
             self.value = random.randint(1, self.sides)
         return int(self.value)
 
