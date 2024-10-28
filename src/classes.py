@@ -10,6 +10,10 @@ class Player:
         self.scorecard = ScoreCard()
         self.dice = [Dice() for _ in range(5)]
 
+    def get_name(self):
+        """Return the players name"""
+        return str(self.name)
+
     def roll_unlocked(self):
         """Roll all the dices that are unlocked. In the beginning of the round, all dices
         are unlocked"""
@@ -19,11 +23,12 @@ class Player:
         """Lock the specific dice/dices to save the value"""
         for index in indices:
             self.dice[index-1].lock()
-    
+
     def unlock_all(self):
+        """Unlock all the dices"""
         for i in self.dice:
             i.unlock()
-            
+
     def unlock_dice(self, indices: list):
         """Unlock the specific dice/dices to enable reroll"""
         for index in indices:
@@ -127,6 +132,44 @@ class ScoreCard:
         else:
             return 0
 
+class Game:
+    """Class where the game is played (Interface)"""
+    def __init__(self, players: list[Player]):
+        self.players = players
+        self.rounds = 15
+        self.dictionary = {}
+
+    def read_file(self):
+        """Read the file to print out the ScoreCard"""
+        self.dictionary = {}
+        if os.path.isfile("round_names.txt"):
+            with open("round_names.txt", "r", encoding = "utf8") as f:
+                for line in f:
+                    self.dictionary[line] = 0
+        return self.dictionary
+
+    def play_game(self):
+        """The main interface"""
+        dictionary = self.read_file()
+        for game_round in range(self.rounds):
+            for player in self.players:
+                print(f"Round: {game_round} --- player: {player.get_name()}")
+                player.roll_unlocked()
+                print("First roll:", player.values())
+                count = 2
+                while True:
+                    x = input(f"Do you want to re-roll (Rolls left: {count}): ")
+                    if x.lower() == "y" and count > 0:
+                        player.unlock_all()
+                        count -= 1
+                        y = input("Which ones do you want to lock: (1,2,3,4,5): ")
+                        player.lock_dice(only_nums(y))
+                        player.roll_unlocked()
+                        print(player.values())
+                    else:
+                        break
+        print(self.dictionary)
+
 def clear_screen():
     """Clear the terminal"""
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -139,17 +182,8 @@ def only_nums(ans: str):
             choices.append(int(char))
     return choices
 
-david = Player("David")
-david.roll_unlocked()
-print("First roll:", david.values())
-count = 0
-while True:
-    x = input("Do you want to re-roll: ")
-    if x.lower() == "n" or count == 3:
-        break
-    david.unlock_all()
-    count += 1
-    y = input("Which ones do you want to lock: (1,2,3,4,5): ")
-    david.lock_dice(only_nums(y))
-    david.roll_unlocked()
-    print(david.values())
+player_1 = Player("David")
+player_2 = Player("Fabian")
+
+game = Game([player_1, player_2])
+game.play_game()
