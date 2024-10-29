@@ -24,6 +24,10 @@ class Player:
         for i in self.dice:
             i.unlock()
             
+    def lock_all(self):
+        for i in self.dice:
+            i.lock()
+        
     def unlock_dice(self, indices: list):
         """Unlock the specific dice/dices to enable reroll"""
         for index in indices:
