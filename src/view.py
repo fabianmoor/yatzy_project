@@ -14,4 +14,4 @@ def get_input(prompt: str) -> str:
 
 def only_nums(ans: str) -> list[int]:
     """Extract numbers from a string."""
-    return [int(char) for char in ans if char.isdigit()] 
+    return [int(num) for num in ans.strip().split() if num.isdigit()]

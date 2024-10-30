@@ -99,26 +99,20 @@ class ScoreCard:
         elif category == "sixes":
             return dice_values.count(6) * 6
         elif category == "one_pair":
-            top = 0
-            for i in range(1, 7):
-                if dice_values.count(i) >= 2:
-                    top = max(top, i)
-            return top * 2
+            pairs = [i for i in set(dice_values) if dice_values.count(i) >= 2]
+            return max(pairs) * 2 if pairs else 0
         elif category == "two_pairs":
-            pairs = []
-            for i in range(1, 7):
-                if dice_values.count(i) >= 2:
-                    pairs.append(i)
+            pairs = [i for i in set(dice_values) if dice_values.count(i) >= 2]
             if len(pairs) >= 2:
-                return sum(pairs[-2:]) * 2
+                return sum(sorted(pairs)[-2:]) * 2
             return 0
         elif category == "three_of_a_kind":
-            for i in range(1, 7):
+            for i in set(dice_values):
                 if dice_values.count(i) >= 3:
                     return i * 3
             return 0
         elif category == "four_of_a_kind":
-            for i in range(1, 7):
+            for i in set(dice_values):
                 if dice_values.count(i) >= 4:
                     return i * 4
             return 0
