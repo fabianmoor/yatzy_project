@@ -91,11 +91,15 @@ class YatzyController:
 
                         # 
                         indices = [num - 1 for num in only_nums(lock_input)]
-                        player.unlock_all()
+                        #player.unlock_all()
                         player.lock_all()
-                        for index in indices:
-                            if 0 <= index < 5:
-                                player.unlock_dice([index+1])
+                        while True:
+                            for index in indices:
+                                if 0 <= index < 5:
+                                    player.unlock_dice([index+1])
+                                    break
+                                else:
+                                    print("invalid input! Try again!")
                         player.roll_unlocked()
                     rolls +=1
                 dice_values = player.values()
