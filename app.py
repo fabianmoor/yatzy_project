@@ -1,3 +1,4 @@
+"""Main Program File"""
 from src.controller import YatzyController
 
 def main() -> int:
