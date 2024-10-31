@@ -32,9 +32,6 @@ class YatzyController:
             "small_straight", "large_straight", "full_house", "chance", "yatzy"
         ]
 
-<<<<<<< HEAD
-    # Main game loop
-=======
 # Function for generating eligible categories to put your score within.
     def decide_eligible_categories(self, dice_values, used_categories):
         """Decide which categories are eligible based on the dice roll."""
@@ -165,7 +162,6 @@ class YatzyController:
         # categories as a list.
         return eligible_categories
 
->>>>>>> 3bb6327 (Function for checking eligible categories)
     def play_game(self) -> None:
         """Main game loop for playing Yatzy."""
 
@@ -238,12 +234,6 @@ class YatzyController:
                     rolls +=1
                 dice_values = player.values()
                 display_message(f"Your dice: {dice_values}")
-<<<<<<< HEAD
-                available_categories = [
-                    cat for cat in self.categories if cat not in player.scorecard.scores
-                    ]
-                display_message(f"Available categories:\n{'\n'.join(available_categories)}\n")
-=======
 
                 used_categories = player.scorecard.scores.keys()
                 eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
@@ -251,18 +241,11 @@ class YatzyController:
                 display_message(
                     f"Eligible categories based on your dice:\n\n{', '.join(eligible_categories)}\n"
                     )
->>>>>>> 3bb6327 (Function for checking eligible categories)
                 while True:
                     category = get_input("Select a category to score in: ").lower()
                     if category in eligible_categories:
                         break
-<<<<<<< HEAD
                     display_message("Invalid category or already used. Please choose another.")
-=======
-                    else:
-                        display_message("Invalid category or already used. Please choose another.")
-
->>>>>>> 3bb6327 (Function for checking eligible categories)
                 score = ScoreCard.calculate_score(dice_values, category)
                 player.scorecard.record_scores(category, score)
                 display_message(f"Scored {score} points in category '{category}'. " \
