@@ -1,3 +1,4 @@
+"""Controller file"""
 from model import Player, ScoreCard
 from view import clear_screen, display_message, get_input, only_nums
 
