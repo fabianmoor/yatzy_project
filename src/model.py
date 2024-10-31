@@ -75,14 +75,21 @@ class ScoreCard:
     """Class for scorecard. Enables score counting, recording, and getting the total score."""
     def __init__(self):
         self.scores = {}
+        self.upper_cat = 0
 
     def record_scores(self, category: str, score: int) -> None:
         """Record the scores for each category."""
         self.scores[category] = score
+        upper_category = ["ones", "twos", "threes", "fours", "fives", "sixes"]
+        if category in upper_category:
+            self.upper_cat += score
 
     def total_score(self) -> int:
         """Return the sum of the scorecard for the player."""
-        return sum(self.scores.values())
+        total = sum(self.scores.values())
+        if self.upper_cat >= 63:
+            total += 50
+        return total
 
     @staticmethod
     def calculate_score(dice_values: List[int], category: str) -> int:
