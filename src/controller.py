@@ -1,5 +1,5 @@
-from .model import Player, ScoreCard
-from .view import clear_screen, display_message, get_input, only_nums
+from model import Player, ScoreCard
+from view import clear_screen, display_message, get_input, only_nums
 
 class YatzyController:
     """Controller class to manage the game flow."""
