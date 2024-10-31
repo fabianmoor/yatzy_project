@@ -278,7 +278,7 @@ class YatzyController:
                                                       "to remove: ").lower()
                         if category in self.categories:
                             break
-                    # display_message("Invalid category or already used. Please choose another.")
+
                 score = ScoreCard.calculate_score(dice_values, category)
                 player.scorecard.record_scores(category, score)
                 if removed:
