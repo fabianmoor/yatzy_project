@@ -189,6 +189,7 @@ class YatzyController:
                 # Print who's turn it is.
                 clear_screen()
                 display_message(f"Round {player_round+1}: {player.name}'s turn\n")
+                removed = False
 
                 # Count players rolls
                 # since all should have
