@@ -64,8 +64,10 @@ class YatzyController:
         # used we do not append them to
         # the eligible list.
         category_name = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes']
+        category_numbers = {'ones': 1, 'twos': 2, 'threes': 3, 'fours': 4, 'fives': 5, 'sixes': 6}
         for category in category_name:
-            if category not in used_categories:
+            number = category_numbers[category]
+            if number in counts and category not in used_categories:
                 eligible_categories.append(category)
 
         # We check if there are any pairs.
@@ -113,10 +115,10 @@ class YatzyController:
             eligible_categories.append("four_of_a_kind")
 
         # Using this condition we can see if
-        # there is a full house. 
+        # there is a full house.
         # Since we need to have 2 of one num
-        # and 3 of another num. 
-        # 
+        # and 3 of another num.
+        #
         # If that condition is met, we know that there
         # is a full house of some kind.
         if (sorted(counts.values()) == [2, 3]
@@ -131,7 +133,7 @@ class YatzyController:
             eligible_categories.append("small_straight")
 
         # Here we check if we have a large straight.
-        # The same logic as above, but instead of 
+        # The same logic as above, but instead of
         # comparing 1 to 5, we compare 2 to 6.
         if (all(num in unique_values for num in [2, 3, 4, 5, 6])
             and "large_straight" not in used_categories):
@@ -172,7 +174,7 @@ class YatzyController:
 
         # Iterating through all rounds
         # for each player.
-        for round in range(num_rounds):
+        for player_round in range(num_rounds):
 
             # Loop through each player
             # so each round.
@@ -182,7 +184,8 @@ class YatzyController:
                 player.reset()
 
                 # Print who's turn it is.
-                display_message(f"\nRound {round+1}: {player.name}'s turn")
+                clear_screen()
+                display_message(f"Round {player_round+1}: {player.name}'s turn\n")
 
                 # Count players rolls
                 # since all should have
@@ -207,7 +210,7 @@ class YatzyController:
                     if rolls < 2:
                         flag = False
                         # Print the result.
-                        display_message(f"Roll {rolls+1}: {player.values()}")
+                        display_message(f"Roll {rolls+1}: {player.values()}\n")
                         player.lock_all()
                         while True:
                             lock_input = get_input(
@@ -233,23 +236,61 @@ class YatzyController:
                             break
                     rolls +=1
                 dice_values = player.values()
+                clear_screen()
                 display_message(f"Your dice: {dice_values}")
 
                 used_categories = player.scorecard.scores.keys()
                 eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
 
                 display_message(
-                    f"Eligible categories based on your dice:\n\n{', '.join(eligible_categories)}\n"
-                    )
+                    "\nEligible categories based on your dice:\n"
+                )
+                for i in range(0, len(eligible_categories), 2):
+                    if i + 1 < len(eligible_categories):
+                        display_message(
+                            f"{eligible_categories[i]:<15}\t"\
+                            f"{eligible_categories[i + 1]:<15}")
+                    else:
+                        display_message(f"{eligible_categories[i]:<15}")
+
+
                 while True:
-                    category = get_input("Select a category to score in: ").lower()
+                    category = get_input("\nSelect a category to score in "\
+                                         "or type 'x' to dispose category: ").lower()
                     if category in eligible_categories:
+                        clear_screen()
                         break
-                    display_message("Invalid category or already used. Please choose another.")
+                    elif category == "x":
+                        removed = True
+                        clear_screen()
+                        display_message("Categories eligible for removal:\n")
+
+                        not_eligible = [cat for cat in self.categories
+                                        if cat not in eligible_categories]
+                        formatted_output = "\n".join(
+                            [f"{not_eligible[i]:<15}\t\t{not_eligible[i + 1]:<15}"
+                            if i + 1 < len(not_eligible) else f"{not_eligible[i]:<15}"
+                            for i in range(0, len(not_eligible), 2)]
+                        )
+                        display_message(formatted_output)
+
+                        category = get_input("\nWhich category would you like "\
+                                                      "to remove: ").lower()
+                        if category in self.categories:
+                            break
+                    # display_message("Invalid category or already used. Please choose another.")
                 score = ScoreCard.calculate_score(dice_values, category)
                 player.scorecard.record_scores(category, score)
-                display_message(f"Scored {score} points in category '{category}'. " \
-                                f"Total score: {player.scorecard.total_score()}")
+                if removed:
+                    clear_screen()
+                    display_message(f"Category '{category}' removed. " \
+                                    f"Total score: {player.scorecard.total_score()}")
+                else:
+                    display_message(f"Scored {score} points in category '{category}'. " \
+                                    f"Total score: {player.scorecard.total_score()}")
+                get_input("Press enter to continue...")
+                removed = False
+
         display_message("\nGame over! Final scores:")
         max_score = max(player.scorecard.total_score() for player in self.players)
         winners = [
