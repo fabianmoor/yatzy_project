@@ -76,46 +76,38 @@ class YatzyController:
                     # We still check if 
                     # we've reached max rolls.
                     if rolls < 2:
-
+                        flag = False
                         # Print the result.
                         display_message(f"Roll {rolls+1}: {player.values()}")
-<<<<<<< HEAD
-
-                        # Ask user which dice to 
-                        # re roll.
-                        lock_input = get_input("Enter dice numbers to re-roll (e.g., 1 3 5), or press Enter to keep all: ")
-
-                        # We check if input
-                        # is in the right
-                        # format.
-=======
-                        lock_input = get_input(
+                        player.lock_all()
+                        while True:
+                            lock_input = get_input(
                             "Enter dice numbers to re-roll (e.g., 1 3 5), "\
                             "or press Enter to keep all: "
                             )
->>>>>>> 610814bab8bd359aac391e236f3ec80db33b672e
-                        if lock_input.strip() == '':
-                            break
-
-                        # 
-                        indices = [num - 1 for num in only_nums(lock_input)]
-                        #player.unlock_all()
-                        player.lock_all()
-                        while True:
-                            for index in indices:
-                                if 0 <= index < 5:
-                                    player.unlock_dice([index+1])
+                            if lock_input.strip() == '':
+                                flag = True
+                            try:
+                                indices = [num - 1 for num in only_nums(lock_input)]
+                                if all(0 < x < 5 for x in indices):
+                                    for index in indices:
+                                        player.unlock_dice([index+1])
                                     break
                                 else:
-                                    print("invalid input! Try again!")
+                                    print("Invalid input! Please try again!")
+
+                            except ValueError:
+                                print("Invalid input")
                         player.roll_unlocked()
+                        if flag == True:
+                            break
                     rolls +=1
                 dice_values = player.values()
                 display_message(f"Your dice: {dice_values}")
                 available_categories = [
                     cat for cat in self.categories if cat not in player.scorecard.scores
                     ]
-                display_message(f"Available categories:\n\n{'\n'.join(available_categories)}\n")
+                display_message(f"Available categories:\n{'\n'.join(available_categories)}\n")
                 while True:
                     category = get_input("Select a category to score in: ").lower()
                     if category in available_categories:
