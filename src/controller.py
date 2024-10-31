@@ -24,7 +24,7 @@ class YatzyController:
             # Add player to player list.
             self.players.append(Player(name))
 
-        
+
         # Define different score categories
         self.categories = [
             "ones", "twos", "threes", "fours", "fives", "sixes",
@@ -56,7 +56,7 @@ class YatzyController:
                 display_message(f"\n{player.name}'s turn")
 
                 # Count players rolls
-                # since all should have 
+                # since all should have
                 # 3 total throws.
                 rolls = 0
 
@@ -73,7 +73,7 @@ class YatzyController:
                         # We unlock all dices
                         player.roll_unlocked()
 
-                    # We still check if 
+                    # We still check if
                     # we've reached max rolls.
                     if rolls < 2:
                         flag = False
@@ -88,18 +88,18 @@ class YatzyController:
                             if lock_input.strip() == '':
                                 flag = True
                             try:
-                                indices = [num - 1 for num in only_nums(lock_input)]
-                                if all(0 < x < 5 for x in indices):
-                                    for index in indices:
-                                        player.unlock_dice([index+1])
-                                    break
-                                else:
-                                    print("Invalid input! Please try again!")
+                                indices = [num - 1 for num in list(set(only_nums(lock_input)))]
+                                if len(indices) > 0:
+                                    if all(0 <= x < 5 for x in indices):
+                                        for index in indices:
+                                            player.unlock_dice([index+1])
+                                        break
+                                print("Invalid input! Please try again!")
 
                             except ValueError:
                                 print("Invalid input")
                         player.roll_unlocked()
-                        if flag == True:
+                        if flag is True:
                             break
                     rolls +=1
                 dice_values = player.values()
@@ -112,8 +112,7 @@ class YatzyController:
                     category = get_input("Select a category to score in: ").lower()
                     if category in available_categories:
                         break
-                    else:
-                        display_message("Invalid category or already used. Please choose another.")
+                    display_message("Invalid category or already used. Please choose another.")
                 score = ScoreCard.calculate_score(dice_values, category)
                 player.scorecard.record_scores(category, score)
                 display_message(f"Scored {score} points in category '{category}'. " \
