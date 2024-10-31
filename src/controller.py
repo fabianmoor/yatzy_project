@@ -1,14 +1,17 @@
 """Controller file"""
 from src.model import Player, ScoreCard
 from src.view import clear_screen, display_message, get_input, only_nums
+import os, csv
 
 class YatzyController:
     """Controller class to manage the game flow."""
     def __init__(self):
 
-        clear_screen()
+        #clear_screen()
         display_message("Welcome to Yatzy!")
-
+        
+        ScoreCard.read_score()
+        ScoreCard.save_score("david", 243)
         # Get number of players.
         num_players = int(get_input("Enter number of players: "))
 
@@ -299,3 +302,6 @@ class YatzyController:
         for player in self.players:
             display_message(f"{player.name}: {player.scorecard.total_score()} points")
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
+        ScoreCard.save_score(winners, max_score)
+    
+    

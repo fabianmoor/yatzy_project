@@ -1,5 +1,5 @@
 """Model File"""
-import random
+import random, os, csv
 from typing import List
 
 class Player:
@@ -91,7 +91,7 @@ class ScoreCard:
             total += 50
         return total
 
-    @staticmethod
+    #@staticmethod
     def calculate_score(dice_values: List[int], category: str) -> int:
         """Calculate the result of the round and return the value."""
         if category == "ones":
@@ -139,3 +139,34 @@ class ScoreCard:
             return sum(dice_values)
         else:
             return 0
+    @staticmethod
+    def save_score(name, score):
+        path = "score.csv"
+        if os.path.isfile(path):          #Check if the path is valid
+            with open(path, "a", encoding = 'utf8', newline="") as f:
+                print(f"File {path} already exists, appending highscore of {name} with {score}")     #Opening the file as read only
+                writer = csv.writer(f)
+                writer.writerow([name, score])
+        else:
+            with open(path, "x", encoding = 'utf8', newline= "") as f:     #If its the first time calculating, create file and write the data
+                writer = csv.writer(f)
+                writer.writerow([name, score])
+                print(f"Highscore of {name} with {score} score saved to {path}")
+    @staticmethod
+    def read_score():
+        path = "score.csv"
+        dic = {}
+        if os.path.exists(path):                              #If the file already exists, update the data in the file
+            with open(path, "r", encoding = 'utf8') as f:
+                print("Previous players with their highscores")
+                csv_reader = csv.reader(f, delimiter=",")        #Reading file using a csv reader and spliting the data
+                for row in csv_reader:
+                    if row != "":
+                        dic[row[0]] = row[1]
+                sorted_dict = dict(sorted(dic.items(), key=lambda item: item[1], reverse= True))
+                for count, key in enumerate(sorted_dict.keys()): 
+                    if count == 5:       #print the first 10 key-value
+                        break
+                    print(f"{key:<10} {dic[key]}")
+        else:
+            print("Highscore not available yet")
