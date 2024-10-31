@@ -43,7 +43,7 @@ class YatzyController:
 
         # Iterating through all rounds
         # for each player.
-        for _ in range(num_rounds):
+        for round in range(num_rounds):
 
             # Loop through each player
             # so each round.
@@ -53,7 +53,7 @@ class YatzyController:
                 player.reset()
 
                 # Print who's turn it is.
-                display_message(f"\n{player.name}'s turn")
+                display_message(f"\nRound {round+1}: {player.name}'s turn")
 
                 # Count players rolls
                 # since all should have
@@ -87,6 +87,7 @@ class YatzyController:
                             )
                             if lock_input.strip() == '':
                                 flag = True
+                                break
                             try:
                                 indices = [num - 1 for num in list(set(only_nums(lock_input)))]
                                 if len(indices) > 0:
