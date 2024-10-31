@@ -244,7 +244,9 @@ class YatzyController:
                 display_message(f"Your dice: {dice_values}")
 
                 used_categories = player.scorecard.scores.keys()
+                print(used_categories)
                 eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
+                print(eligible_categories)
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
@@ -269,8 +271,7 @@ class YatzyController:
                         clear_screen()
                         display_message("Categories eligible for removal:\n")
 
-                        not_eligible = [cat for cat in self.categories
-                                        if cat not in eligible_categories]
+                        not_eligible = [cat for cat in self.categories if cat not in (eligible_categories and used_categories)]
                         formatted_output = "\n".join(
                             [f"{not_eligible[i]:<15}\t\t{not_eligible[i + 1]:<15}"
                             if i + 1 < len(not_eligible) else f"{not_eligible[i]:<15}"
