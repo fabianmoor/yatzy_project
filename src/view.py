@@ -1,3 +1,4 @@
+"""View file"""
 import os
 
 def clear_screen() -> None:
