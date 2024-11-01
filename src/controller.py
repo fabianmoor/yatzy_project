@@ -5,9 +5,42 @@ from src.view import clear_screen, display_message, get_input, only_nums
 class YatzyController:
     """Controller class to manage the game flow."""
     def __init__(self):
+        clear_screen()
+        yatzy_art = r"""
+__   __    _             
+\ \ / /   | |            
+ \ V /__ _| |_ _____   _ 
+  \ // _` | __|_  / | | |
+  | | (_| | |_ / /| |_| |
+  \_/\__,_|\__/___|\__, |
+                    __/ |
+                   |___/ 
+
+        """
+        display_message(yatzy_art)
+        display_message("""
+[1]: Play Game
+[2]: Show High Scores
+[3]: Exit
+        """)
+        while True:
+            menu_input = get_input("Choice: ").lower()
+            try:
+                match menu_input:
+                    case "1":
+                        menu_choice = 1
+                        break
+                    case "2":
+                        menu_choice = 2
+                        break
+                    case "3":
+                        menu_choice = 3
+                        break
+            except ValueError:
+                display_message("Invalid input...")
+
         display_message("Welcome to Yatzy!")
         ScoreCard.read_score()
-        
         # Get number of players.
         while True:
             try:
@@ -38,7 +71,9 @@ class YatzyController:
             "small_straight", "large_straight", "full_house", "chance", "yatzy"
         ]
 
-# Function for generating eligible categories to put your score within.
+    # Show Main Menu
+
+    # Function for generating eligible categories to put your score within.
     def decide_eligible_categories(self, dice_values, used_categories):
         """Decide which categories are eligible based on the dice roll."""
 
