@@ -158,7 +158,7 @@ class ScoreCard:
         dic = {}
         if os.path.exists(path):                              #If the file already exists, update the data in the file
             with open(path, "r", encoding = 'utf8') as f:
-                print("Previous players with their highscores")
+                print("Previous players with their highscores\n")
                 csv_reader = csv.reader(f, delimiter=",")        #Reading file using a csv reader and spliting the data
                 for row in csv_reader:
                     if row != "":

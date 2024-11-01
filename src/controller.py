@@ -2,57 +2,43 @@
 from src.model import Player, ScoreCard
 from src.view import clear_screen, display_message, get_input, only_nums
 
+
+
 class YatzyController:
     """Controller class to manage the game flow."""
     def __init__(self):
+
         clear_screen()
-        yatzy_art = r"""
-__   __    _             
-\ \ / /   | |            
- \ V /__ _| |_ _____   _ 
-  \ // _` | __|_  / | | |
-  | | (_| | |_ / /| |_| |
-  \_/\__,_|\__/___|\__, |
-                    __/ |
-                   |___/ 
 
-        """
-        display_message(yatzy_art)
-        display_message("""
-[1]: Play Game
-[2]: Show High Scores
-[3]: Exit
-        """)
-        while True:
-            menu_input = get_input("Choice: ").lower()
-            try:
-                match menu_input:
-                    case "1":
-                        menu_choice = 1
-                        break
-                    case "2":
-                        menu_choice = 2
-                        break
-                    case "3":
-                        menu_choice = 3
-                        break
-            except ValueError:
-                display_message("Invalid input...")
+        # Init player_list
+        self.players = []
 
-        display_message("Welcome to Yatzy!")
+        # Define different score categories
+        self.categories = [
+            "ones", "twos", "threes", "fours", "fives", "sixes",
+            "one_pair", "two_pairs", "three_of_a_kind", "four_of_a_kind",
+            "small_straight", "large_straight", "full_house", "chance", "yatzy"
+        ]
+
+    def show_highscores(self):
+        """Function for showing previous HighScores"""
+        clear_screen()
+        ScoreCard.read_score()
+
+    def start_game(self):
+        """Start Game (Init Game)"""
+        clear_screen()
+        display_message("Welcome to Yatzy!\n")
         ScoreCard.read_score()
         # Get number of players.
         while True:
             try:
-                num_players = int(get_input("Enter number of players: "))
+                num_players = int(get_input("\nEnter number of players: "))
                 if num_players > 0:
                     break
                 print("Invalid input! Please try again!")
             except ValueError:
                 print("Invalid input! Please try again!")
-
-        # Init player_list
-        self.players = []
 
         # Create players
         for i in range(num_players):
@@ -62,16 +48,6 @@ __   __    _
 
             # Add player to player list.
             self.players.append(Player(name))
-
-
-        # Define different score categories
-        self.categories = [
-            "ones", "twos", "threes", "fours", "fives", "sixes",
-            "one_pair", "two_pairs", "three_of_a_kind", "four_of_a_kind",
-            "small_straight", "large_straight", "full_house", "chance", "yatzy"
-        ]
-
-    # Show Main Menu
 
     # Function for generating eligible categories to put your score within.
     def decide_eligible_categories(self, dice_values, used_categories):
@@ -252,6 +228,7 @@ __   __    _
                     if rolls < 2:
                         flag = False
                         # Print the result.
+                        clear_screen()
                         display_message(f"Roll {rolls+1}: {player.values()}\n")
                         player.lock_all()
                         while True:
