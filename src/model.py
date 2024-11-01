@@ -91,7 +91,7 @@ class ScoreCard:
             total += 50
         return total
 
-    #@staticmethod
+    @staticmethod
     def calculate_score(dice_values: List[int], category: str) -> int:
         """Calculate the result of the round and return the value."""
         if category == "ones":

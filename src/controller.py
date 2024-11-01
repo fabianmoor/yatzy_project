@@ -1,19 +1,22 @@
 """Controller file"""
 from src.model import Player, ScoreCard
 from src.view import clear_screen, display_message, get_input, only_nums
-import os, csv
 
 class YatzyController:
     """Controller class to manage the game flow."""
     def __init__(self):
-
-        #clear_screen()
         display_message("Welcome to Yatzy!")
-        
         ScoreCard.read_score()
-        ScoreCard.save_score("david", 243)
+        
         # Get number of players.
-        num_players = int(get_input("Enter number of players: "))
+        while True:
+            try:
+                num_players = int(get_input("Enter number of players: "))
+                if num_players > 0:
+                    break
+                print("Invalid input! Please try again!")
+            except ValueError:
+                print("Invalid input! Please try again!")
 
         # Init player_list
         self.players = []
@@ -89,9 +92,9 @@ class YatzyController:
         #
         # If both conditions are met, we append it to the
         # eligible list.
-        if (
-            any(count >= 2 for count in counts.values())
+        if (any(count >= 2 for count in counts.values())
             and "one_pair" not in used_categories):
+
             eligible_categories.append("one_pair")
 
         # We iterate over counts.item() and keep track of both
@@ -232,21 +235,21 @@ class YatzyController:
                                             player.unlock_dice([index+1])
                                         break
                                 print("Invalid input! Please try again!")
-
                             except ValueError:
                                 print("Invalid input")
+
                         player.roll_unlocked()
                         if flag is True:
                             break
+
                     rolls +=1
+                
                 dice_values = player.values()
                 clear_screen()
                 display_message(f"Your dice: {dice_values}")
 
-                used_categories = player.scorecard.scores.keys()
-                print(used_categories)
+                used_categories = list(player.scorecard.scores.keys())
                 eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
-                print(eligible_categories)
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
@@ -265,13 +268,16 @@ class YatzyController:
                                          "or type 'x' to dispose category: ").lower()
                     if category in eligible_categories:
                         clear_screen()
+                        score = ScoreCard.calculate_score(dice_values, category)
+                        player.scorecard.record_scores(category, score)
                         break
                     elif category == "x":
                         removed = True
                         clear_screen()
                         display_message("Categories eligible for removal:\n")
 
-                        not_eligible = [cat for cat in self.categories if cat not in (eligible_categories and used_categories)]
+                        not_eligible = [cat for cat in self.categories if cat not
+                                        in (eligible_categories + used_categories)]
                         formatted_output = "\n".join(
                             [f"{not_eligible[i]:<15}\t\t{not_eligible[i + 1]:<15}"
                             if i + 1 < len(not_eligible) else f"{not_eligible[i]:<15}"
@@ -282,12 +288,11 @@ class YatzyController:
                         category = get_input("\nWhich category would you like "\
                                                       "to remove: ").lower()
                         if category in self.categories:
+                            player.scorecard.record_scores(category, 0)
                             break
-
-                score = ScoreCard.calculate_score(dice_values, category)
-                player.scorecard.record_scores(category, score)
+                    else:
+                        print("Invalid input! Please try again!")
                 if removed:
-                    clear_screen()
                     display_message(f"Category '{category}' removed. " \
                                     f"Total score: {player.scorecard.total_score()}")
                 else:
@@ -298,12 +303,11 @@ class YatzyController:
 
         display_message("\nGame over! Final scores:")
         max_score = max(player.scorecard.total_score() for player in self.players)
-        winners = [
-            player.name for player in self.players if player.scorecard.total_score() == max_score
-            ]
+        winners = []
+        for player in self.players:
+            if player.scorecard.total_score() == max_score:
+                winners.append(player.name)
+                ScoreCard.save_score(player.name, max_score)
         for player in self.players:
             display_message(f"{player.name}: {player.scorecard.total_score()} points")
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
-        ScoreCard.save_score(winners, max_score)
-    
-    
