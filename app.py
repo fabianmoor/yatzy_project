@@ -22,7 +22,7 @@ def main() -> int:
                     controller.play_game()
                 case 2:
                     controller.show_highscores()
-    return 0
+
 
 if __name__ == "__main__":
     main()

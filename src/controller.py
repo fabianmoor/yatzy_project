@@ -255,7 +255,7 @@ class YatzyController:
                             break
 
                     rolls +=1
-                
+
                 dice_values = player.values()
                 clear_screen()
                 display_message(f"Your dice: {dice_values}")
