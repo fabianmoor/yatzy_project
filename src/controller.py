@@ -20,24 +20,42 @@ class YatzyController:
             "small_straight", "large_straight", "full_house", "chance", "yatzy"
         ]
 
+    # Function for calling High Scores.
     def show_highscores(self):
         """Function for showing previous HighScores"""
         clear_screen()
         ScoreCard.read_score()
 
+    # Function for starting game.
     def start_game(self):
         """Start Game (Init Game)"""
         clear_screen()
         display_message("Welcome to Yatzy!\n")
+
+        # Fetch the Read Score
         ScoreCard.read_score()
+
         # Get number of players.
         while True:
             try:
+
+                # Ask the user for number of players.
                 num_players = int(get_input("\nEnter number of players: "))
+
+                # If number is greater than 0.
                 if num_players > 0:
+
+                    # We exit the while loop.
                     break
+
+                # Else we print invalid input.
                 print("Invalid input! Please try again!")
+
+            # In the case of a value error
+            # such as a letter.
             except ValueError:
+
+                # We give the same error.
                 print("Invalid input! Please try again!")
 
         # Create players
@@ -81,10 +99,25 @@ class YatzyController:
         # used we do not append them to
         # the eligible list.
         category_name = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes']
+
+        # We make a similair dict with 
+        # numbers as values.
         category_numbers = {'ones': 1, 'twos': 2, 'threes': 3, 'fours': 4, 'fives': 5, 'sixes': 6}
+
+        # We iterate over the category_name.
         for category in category_name:
+
+            # We assign the current element 
+            # into number.
             number = category_numbers[category]
+
+            # If the number is in counts
+            # and if the category iteration
+            # element not in used_categories.
             if number in counts and category not in used_categories:
+
+                # We include it into the 
+                # eligible_categories.
                 eligible_categories.append(category)
 
         # We check if there are any pairs.
@@ -106,6 +139,8 @@ class YatzyController:
         if (any(count >= 2 for count in counts.values())
             and "one_pair" not in used_categories):
 
+            # If so we append "one_pair" to the 
+            # eligible_categories.
             eligible_categories.append("one_pair")
 
         # We iterate over counts.item() and keep track of both
@@ -181,6 +216,7 @@ class YatzyController:
         # categories as a list.
         return eligible_categories
 
+    # Play game function.
     def play_game(self) -> None:
         """Main game loop for playing Yatzy."""
 
@@ -226,100 +262,250 @@ class YatzyController:
                     # We still check if
                     # we've reached max rolls.
                     if rolls < 2:
+
+                        # We init a flag var to
+                        # False.
                         flag = False
-                        # Print the result.
+
                         clear_screen()
+
+                        # Print the result.
                         display_message(f"Roll {rolls+1}: {player.values()}\n")
+
+                        # We lock all dice of 
+                        # the current player.
                         player.lock_all()
+
+                        # We initialize a while
+                        # loop for iteration.
                         while True:
+
+                            # We ask the user what input
+                            # to re roll.
                             lock_input = get_input(
                             "Enter dice numbers to re-roll (e.g., 1 3 5), "\
                             "or press Enter to keep all: "
                             )
+
+                            # We strip all the nums
+                            # in order to fetch the values
+                            # specified by the user.
                             if lock_input.strip() == '':
+
+                                # If so we set flag to
+                                # True.
                                 flag = True
+
+                                # And exit the while loop.
+                                print("Exited while loop")
                                 break
+
+                            # Init a try error handling.
                             try:
+
+                                # For each element in only_nums when
+                                # parsing the lock_input as an argument:
+                                #
+                                # We add the value - 1 to represent the
+                                # index.
+                                #
+                                # Meaning we add each index to the indices
+                                # variable as a list type.
                                 indices = [num - 1 for num in list(set(only_nums(lock_input)))]
+
+                                # We first check if the length
+                                # is greater than 0.
+                                #
+                                # To check if the user wants to
+                                # re roll any dice.
                                 if len(indices) > 0:
+
+                                    # If 0 <= x < 5 for all elements
+                                    # in the list.
                                     if all(0 <= x < 5 for x in indices):
+
+                                        # If above holds true,
+                                        # we initiate a for loop.
                                         for index in indices:
+
+                                            # We unlock all dice that corresponds
+                                            # to an index.
                                             player.unlock_dice([index+1])
+
                                         break
+
+                                # If above failes,
+                                # we print the following.
                                 print("Invalid input! Please try again!")
+
+                            # If we get a ValueError such as 
+                            # a character instead of an int.
                             except ValueError:
+
+                                # We print the following.
                                 print("Invalid input")
 
+                        # We roll all the dice
+                        # that are unlocked.
                         player.roll_unlocked()
+
+                        # If flag is true,
+                        # meaning that we've
+                        # checked the user input
+                        # and rolled each die that should
+                        # be rolled.
                         if flag is True:
+
+                            # We exit the loop.
                             break
 
-                    rolls +=1
+                    # Also we incriment the
+                    # rolls.
+                    rolls += 1
 
+                # We save the dices
                 dice_values = player.values()
+
                 clear_screen()
+
+                # Showcase the dices.
                 display_message(f"Your dice: {dice_values}")
 
+                # We check what categories the player has
+                # used and save it to a var for later use.
                 used_categories = list(player.scorecard.scores.keys())
+
+                # We run the function for deciding eligible
+                # categories when parsing the dice_values and
+                # used_categories.
                 eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
                 )
+
+                # We iterate over the eligible_categories list two elements at a time.
                 for i in range(0, len(eligible_categories), 2):
+
+                    # Check if there's a pair of categories to display.
                     if i + 1 < len(eligible_categories):
+
+                        # Display two categories side by side.
                         display_message(
                             f"{eligible_categories[i]:<15}\t"\
                             f"{eligible_categories[i + 1]:<15}")
+
+                    # If only one category remains, display it alone.
                     else:
                         display_message(f"{eligible_categories[i]:<15}")
 
-
+                # Start a loop to get user input for selecting a category to score in.
                 while True:
+
+                    # Prompt the player to choose a category or dispose of one.
                     category = get_input("\nSelect a category to score in "\
                                          "or type 'x' to dispose category: ").lower()
+
+                    # Check if the selected category is in the list of eligible categories.
                     if category in eligible_categories:
+
+                        # Clear the screen before displaying the score.
                         clear_screen()
+
+                        # Calculate the score for the chosen category based on dice values.
                         score = ScoreCard.calculate_score(dice_values, category)
+
+                        # Record the score in the player's scorecard.
                         player.scorecard.record_scores(category, score)
+
+                        # Exit the loop as a valid category was selected.
                         break
+
+                    # Check if the player chose to dispose of a category.
                     elif category == "x":
+
+                        # Set the removed flag to True, as a category might be removed.
                         removed = True
+
+                        # Clear the screen to display removal options.
                         clear_screen()
+
+                        # Display message indicating available categories for removal.
                         display_message("Categories eligible for removal:\n")
 
+                        # Create a list of categories not eligible or already used.
                         not_eligible = [cat for cat in self.categories if cat not
                                         in (eligible_categories + used_categories)]
+
+                        # Format the list of not eligible categories for display.
                         formatted_output = "\n".join(
                             [f"{not_eligible[i]:<15}\t\t{not_eligible[i + 1]:<15}"
                             if i + 1 < len(not_eligible) else f"{not_eligible[i]:<15}"
                             for i in range(0, len(not_eligible), 2)]
                         )
+
+                        # Display the formatted list of not eligible categories.
                         display_message(formatted_output)
 
+                        # Prompt the player to select a category to remove.
                         category = get_input("\nWhich category would you like "\
-                                                      "to remove: ").lower()
+                                             "to remove: ").lower()
+
+                        # Check if the selected category is valid for removal.
                         if category in self.categories:
+
+                            # Record a score of zero for the removed category.
                             player.scorecard.record_scores(category, 0)
+
+                            # Exit the loop as a category has been removed.
                             break
+
+                    # If input is invalid, display an error message and continue the loop.
                     else:
                         print("Invalid input! Please try again!")
+
+                # Check if a category was removed, and display appropriate message.
                 if removed:
                     display_message(f"Category '{category}' removed. " \
                                     f"Total score: {player.scorecard.total_score()}")
+
+                # Otherwise, display the score recorded for the selected category.
                 else:
                     display_message(f"Scored {score} points in category '{category}'. " \
                                     f"Total score: {player.scorecard.total_score()}")
+
+                # Wait for the player to press enter before continuing.
                 get_input("Press enter to continue...")
+
+                # Reset the removed flag for the next round.
                 removed = False
 
+        clear_screen()
+
+        # Display the end-of-game message showing the final scores.
         display_message("\nGame over! Final scores:")
+
+        # Calculate the highest score achieved among all players.
         max_score = max(player.scorecard.total_score() for player in self.players)
+
+        # Initialize a list to hold the names of the winners.
         winners = []
+
+        # Iterate over each player to identify the winners.
         for player in self.players:
+
+            # Check if the player's score matches the max score.
             if player.scorecard.total_score() == max_score:
+
+                # Add the player's name to the list of winners.
                 winners.append(player.name)
+
+                # Save the high score with the player's name.
                 ScoreCard.save_score(player.name, max_score)
+
+        # Display each player's name and their final score.
         for player in self.players:
             display_message(f"{player.name}: {player.scorecard.total_score()} points")
+
+        # Announce the winner(s) and display their score.
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
