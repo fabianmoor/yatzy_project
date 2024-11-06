@@ -1,51 +1,44 @@
 """Controller file"""
-from src.model import Player
+from src.model import Player, ScoreCard
 from src.view import clear_screen, display_message, get_input, only_nums
-from src.methods import Methods
 
 
-class Controller:
+
+class YatzyController:
     """Controller class to manage the game flow."""
-    def __init__(self, game_type: int):
+    def __init__(self):
 
         clear_screen()
-        self.game_type = game_type
+
         # Init player_list
         self.players = []
-        yatzy = [
+
+        # Define different score categories
+        self.categories = [
             "ones", "twos", "threes", "fours", "fives", "sixes",
             "one_pair", "two_pairs", "three_of_a_kind", "four_of_a_kind",
             "small_straight", "large_straight", "full_house", "chance", "yatzy"
         ]
-        # Define different score categories
-        maxi_yatzy = [
-            "ones", "twos", "threes", "fours", "fives", "sixes",
-            "one_pair", "two_pairs", "three_pairs", "three_of_a_kind",
-            "four_of_a_kind", "five_of_a_kind", "small_straight",
-            "large_straight", "full_straight", "full_house", "villa",
-            "tower", "chance", "yatzy"
-        ]
-        self.categories = yatzy if game_type == 0 else maxi_yatzy
 
     def show_highscores(self):
         """Function for showing previous HighScores"""
         clear_screen()
-        Methods.read_score()
+        ScoreCard.read_score()
 
     def start_game(self):
         """Start Game (Init Game)"""
         clear_screen()
         display_message("Welcome to Yatzy!\n")
-        Methods.read_score()
+        ScoreCard.read_score()
         # Get number of players.
         while True:
             try:
                 num_players = int(get_input("\nEnter number of players: "))
                 if num_players > 0:
                     break
-                Methods.print_error()
+                print("Invalid input! Please try again!")
             except ValueError:
-                Methods.print_error()
+                print("Invalid input! Please try again!")
 
         # Create players
         for i in range(num_players):
@@ -54,7 +47,139 @@ class Controller:
             name = get_input(f"Enter name for player {i+1}: ")
 
             # Add player to player list.
-            self.players.append(Player(name, self.game_type))
+            self.players.append(Player(name, 5))
+
+    # Function for generating eligible categories to put your score within.
+    def decide_eligible_categories(self, dice_values, used_categories):
+        """Decide which categories are eligible based on the dice roll."""
+
+        # Init list for eligible categories
+        eligible_categories = []
+
+        # Dict for counting each num
+        # occurance.
+        counts = {}
+
+        # We iterate through all values
+        # of our dice_values.
+        for value in dice_values:
+
+            # For each value we iterate we count it.
+            # and add it to the counts dict.
+            # Ex. ["2", "3", "4", "2"]
+            # Like: { 2: 2, 3: 1, 4: 1 }
+            counts[value] = counts.get(value, 0) + 1
+
+        # We keep track of the different
+        # values within the dice_values
+        # by converting it to a set, hence
+        # removing all the duplicates.
+        unique_values = set(dice_values)
+
+        # We then iterate over the simpler
+        # categories. If any of them are
+        # used we do not append them to
+        # the eligible list.
+        category_name = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes']
+        category_numbers = {'ones': 1, 'twos': 2, 'threes': 3, 'fours': 4, 'fives': 5, 'sixes': 6}
+        for category in category_name:
+            number = category_numbers[category]
+            if number in counts and category not in used_categories:
+                eligible_categories.append(category)
+
+        # We check if there are any pairs.
+        #
+        # We do this by using any() which returns
+        # True if ANY value is True.
+        # Hence we check if any element in the iteration
+        # meets the condition.
+        #
+        # Meaning if any counts.value is greater than
+        # or equal to 2 the first half of the condition
+        # is met.
+        #
+        # Finally we just check if "one_pair" also not in
+        # used_categories.
+        #
+        # If both conditions are met, we append it to the
+        # eligible list.
+        if (any(count >= 2 for count in counts.values())
+            and "one_pair" not in used_categories):
+
+            eligible_categories.append("one_pair")
+
+        # We iterate over counts.item() and keep track of both
+        # the key and the value.
+        #
+        # If the count >= 2 we add it to pairs.
+        pairs = [num for num, count in counts.items() if count >= 2]
+
+        # Here we check the other types of potential categories.
+        # Here specifically two pairs.
+        if len(pairs) >= 2 and "two_pairs" not in used_categories:
+            eligible_categories.append("two_pairs")
+
+        # Here we check if there is three of the same
+        # value.
+        if (any(count >= 3 for count in counts.values())
+            and "three_of_a_kind" not in used_categories):
+            eligible_categories.append("three_of_a_kind")
+
+        # Here we check if there is four of the same
+        # value.
+        if (any(count >= 4 for count in counts.values())
+            and "four_of_a_kind" not in used_categories):
+            eligible_categories.append("four_of_a_kind")
+
+        # Using this condition we can see if
+        # there is a full house.
+        # Since we need to have 2 of one num
+        # and 3 of another num.
+        #
+        # If that condition is met, we know that there
+        # is a full house of some kind.
+        if (sorted(counts.values()) == [2, 3]
+            and "full_house" not in used_categories):
+            eligible_categories.append("full_house")
+
+        # Here we check if we have a small straight.
+        # We do this by checking if all unique_values
+        # are in the list [1, 2, 3, 4, 5]
+        if (all(num in unique_values for num in [1, 2, 3, 4, 5])
+            and "small_straight" not in used_categories):
+            eligible_categories.append("small_straight")
+
+        # Here we check if we have a large straight.
+        # The same logic as above, but instead of
+        # comparing 1 to 5, we compare 2 to 6.
+        if (all(num in unique_values for num in [2, 3, 4, 5, 6])
+            and "large_straight" not in used_categories):
+            eligible_categories.append("large_straight")
+
+        # Here if uniquie values == 1, it means that
+        # all dices where the same.
+        #
+        # Hence we are eligible for a yatzy.
+        if len(unique_values) == 1 and "yatzy" not in used_categories:
+            eligible_categories.append("yatzy")
+
+        # Chance should always be available
+        # if it hasn't been used yet.
+        #
+        # Hence we only check if it's been used.
+        if "chance" not in used_categories:
+            eligible_categories.append("chance")
+
+        # Finally we iterate over the eligible categories
+        # We check if the current element is in self.categories
+        #
+        # If the condition is met, the category is kept in the
+        # new list. If not, it is removed.
+        eligible_categories = [cat for cat in eligible_categories if cat in self.categories]
+
+        # We finally return the eligible
+        # categories as a list.
+        return eligible_categories
 
     def play_game(self) -> None:
         """Main game loop for playing Yatzy."""
@@ -77,7 +202,7 @@ class Controller:
 
                 # Print who's turn it is.
                 clear_screen()
-                
+                display_message(f"Round {player_round+1}: {player.name}'s turn\n")
                 removed = False
 
                 # Count players rolls
@@ -104,7 +229,6 @@ class Controller:
                         flag = False
                         # Print the result.
                         clear_screen()
-                        display_message(f"Round {player_round+1} Saved rolls: {player.get_roll()}: {player.name}'s turn\n")
                         display_message(f"Roll {rolls+1}: {player.values()}\n")
                         player.lock_all()
                         while True:
@@ -114,7 +238,6 @@ class Controller:
                             )
                             if lock_input.strip() == '':
                                 flag = True
-                                #player.save_roll(player.rolls)
                                 break
                             try:
                                 indices = [num - 1 for num in list(set(only_nums(lock_input)))]
@@ -123,22 +246,22 @@ class Controller:
                                         for index in indices:
                                             player.unlock_dice([index+1])
                                         break
-                                Methods.print_error()
+                                print("Invalid input! Please try again!")
                             except ValueError:
-                                Methods.print_error()
+                                print("Invalid input")
 
                         player.roll_unlocked()
                         if flag is True:
                             break
 
-                    rolls += 1
-                    
+                    rolls +=1
+
                 dice_values = player.values()
                 clear_screen()
                 display_message(f"Your dice: {dice_values}")
 
                 used_categories = list(player.scorecard.scores.keys())
-                eligible_categories = Methods.decide_eligible_categories(self.game_type, dice_values, used_categories, self.categories)
+                eligible_categories = self.decide_eligible_categories(dice_values, used_categories)
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
@@ -157,7 +280,7 @@ class Controller:
                                          "or type 'x' to dispose category: ").lower()
                     if category in eligible_categories:
                         clear_screen()
-                        score = Methods.calculate_score(dice_values, category)
+                        score = ScoreCard.calculate_score_yatzy(dice_values, category)
                         player.scorecard.record_scores(category, score)
                         break
                     elif category == "x":
@@ -179,9 +302,8 @@ class Controller:
                         if category in self.categories:
                             player.scorecard.record_scores(category, 0)
                             break
-                        Methods.print_error()
                     else:
-                        Methods.print_error()
+                        print("Invalid input! Please try again!")
                 if removed:
                     display_message(f"Category '{category}' removed. " \
                                     f"Total score: {player.scorecard.total_score()}")
@@ -197,7 +319,7 @@ class Controller:
         for player in self.players:
             if player.scorecard.total_score() == max_score:
                 winners.append(player.name)
-                Methods.save_score(player.name, max_score)
+                ScoreCard.save_score(player.name, max_score)
         for player in self.players:
             display_message(f"{player.name}: {player.scorecard.total_score()} points")
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
