@@ -190,7 +190,8 @@ class Methods:
 
         # Tower (exactly one pair and one four of a kind)
         if sorted(counts.values()) == [2, 4] and "tower" not in used_categories:
-            eligible_categories.append("tower")
+            if game_type == 1:
+                eligible_categories.append("tower")
 
         # Small Straight (1-5 sequence)
         if all(num in unique_values for num in [1, 2, 3, 4, 5]) and "small_straight" not in used_categories:
