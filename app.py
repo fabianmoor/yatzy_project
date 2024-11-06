@@ -1,8 +1,8 @@
 """Main Program File"""
+import sys
 from src.controller import YatzyController
 from src.view import clear_screen
 
-import sys
 
 def main() -> int:
     """Main function to start the Yatzy game."""
