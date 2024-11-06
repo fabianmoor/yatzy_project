@@ -1,7 +1,6 @@
 """Main Program File"""
 from src.controller import Controller
-from src.view import clear_screen
-from src.methods import Methods
+from src.methods import read_score, clear_screen
 
 def main() -> int:
     """Main function to start the Yatzy game."""
@@ -25,12 +24,12 @@ def main() -> int:
                     if game_choice == 1:
                         controller = Controller(1)
                     else:
-                        controller = Controller(0)
+                        controller = Controller(2)
                     controller.start_game()
                     controller.play_game()
                 case 2:
                     clear_screen()
-                    Methods.read_score()
+                    read_score(10)
 
 
 if __name__ == "__main__":

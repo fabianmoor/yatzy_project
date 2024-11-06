@@ -1,7 +1,6 @@
 """Model File"""
 import random
 from typing import List
-from collections import Counter
 
 class Player:
     """Player class to initialize each player with their own set of 5 dice. Functions to
@@ -10,14 +9,16 @@ class Player:
     def __init__(self, name: str, game_type: int):
         self.name = name
         self.scorecard = ScoreCard(game_type)
-        dice_count = 5 if game_type == 0 else 6
+        dice_count = 5 if game_type == 1 else 6
         self.dice = [Dice() for _ in range(dice_count)]
-        self.roll = 3
+        self.roll = 0
 
     def save_roll(self, roll_count: int) -> None:
+        """save the leftover rolls"""
         self.roll = roll_count
 
     def get_roll(self) -> int:
+        """return the saved rolls"""
         return self.roll
 
     def roll_unlocked(self) -> List[int]:
@@ -97,7 +98,7 @@ class ScoreCard:
     def total_score(self) -> int:
         """Return the sum of the scorecard for the player."""
         total = sum(self.scores.values())
-        if self.game_type == 0:
+        if self.game_type == 1:
             if self.upper_cat >= 63:
                 total += 50
         else:

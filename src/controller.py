@@ -1,14 +1,13 @@
 """Controller file"""
 from src.model import Player
-from src.view import clear_screen, display_message, get_input, only_nums
-from src.methods import Methods
+from src.methods import print_error, clear_screen, display_message, read_score, get_input, only_nums
+from src.methods import decide_eligible_categories, calculate_score, save_score
 
 
 class Controller:
     """Controller class to manage the game flow."""
     def __init__(self, game_type: int):
 
-        clear_screen()
         self.game_type = game_type
         # Init player_list
         self.players = []
@@ -25,22 +24,26 @@ class Controller:
             "large_straight", "full_straight", "full_house", "villa",
             "tower", "chance", "yatzy"
         ]
-        self.categories = yatzy if game_type == 0 else maxi_yatzy
+        self.categories = yatzy if game_type == 1 else maxi_yatzy
+        print(f"Game Type: {game_type}")
 
     def start_game(self):
         """Start Game (Init Game)"""
         clear_screen()
-        display_message("Welcome to Yatzy!\n")
-        Methods.read_score()
+        if self.game_type == 1:
+            display_message("Welcome to Yatzy!\n")
+        elif self.game_type == 2:
+            display_message("Welcome to MaxiYatzy!\n")
+        read_score(3)
         # Get number of players.
         while True:
             try:
                 num_players = int(get_input("\nEnter number of players: "))
                 if num_players > 0:
                     break
-                Methods.print_error()
+                print_error()
             except ValueError:
-                Methods.print_error()
+                print_error()
 
         # Create players
         for i in range(num_players):
@@ -72,34 +75,36 @@ class Controller:
 
                 # Print who's turn it is.
                 clear_screen()
-                
+
                 removed = False
 
                 # Count players rolls
                 # since all should have
                 # 3 total throws.
-                rolls = 0
+                rolls = 3
+                count_rolls = 0
 
                 # Check that player
                 # hasn't rolled more
                 # than 3 times including
                 # first roll.
-                while rolls < 3:
-
+                while rolls > 0:
+                    rolls -= 1
+                    count_rolls += 1
                     # If we haven't rolled
                     # prior.
-                    if rolls == 0:
+                    if count_rolls == 1:
 
                         # We unlock all dices
                         player.roll_unlocked()
 
                     # We still check if
                     # we've reached max rolls.
-                    if rolls < 2:
+                    if rolls >= 1:
                         flag = False
                         # Print the result.
                         clear_screen()
-                        display_message(f"Round {player_round+1} Saved rolls: {player.get_roll()}: {player.name}'s turn\n")
+                        display_message((f"Round {player_round+1} Current rolls: {rolls} {player.name}'s turn\n"))
                         display_message(f"Roll {rolls+1}: {player.values()}\n")
                         player.lock_all()
                         while True:
@@ -109,7 +114,8 @@ class Controller:
                             )
                             if lock_input.strip() == '':
                                 flag = True
-                                #player.save_roll(player.rolls)
+                                if self.game_type == 2:
+                                    player.save_roll(player.get_roll()+rolls)
                                 break
                             try:
                                 indices = [num - 1 for num in list(set(only_nums(lock_input)))]
@@ -118,22 +124,30 @@ class Controller:
                                         for index in indices:
                                             player.unlock_dice([index+1])
                                         break
-                                Methods.print_error()
+                                print_error()
                             except ValueError:
-                                Methods.print_error()
+                                print_error()
 
                         player.roll_unlocked()
                         if flag is True:
                             break
+                    if rolls == 0 and self.game_type == 2:
+                        while True:
+                            ans = input((f"Do you want to use your saved rerolls? "
+                                         f"{player.get_roll()} left (y/n):")).lower()
+                            if ans == 'y':
+                                rolls += player.get_roll()
+                                break
+                            if ans == 'n':
+                                break
+                            print_error()
 
-                    rolls += 1
-                    
                 dice_values = player.values()
                 clear_screen()
                 display_message(f"Your dice: {dice_values}")
 
                 used_categories = list(player.scorecard.scores.keys())
-                eligible_categories = Methods.decide_eligible_categories(self.game_type, dice_values, used_categories, self.categories)
+                eligible_categories = decide_eligible_categories(self.game_type, dice_values, used_categories, self.categories)
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
@@ -152,7 +166,7 @@ class Controller:
                                          "or type 'x' to dispose category: ").lower()
                     if category in eligible_categories:
                         clear_screen()
-                        score = Methods.calculate_score(dice_values, category)
+                        score = calculate_score(dice_values, category)
                         player.scorecard.record_scores(category, score)
                         break
                     elif category == "x":
@@ -174,9 +188,9 @@ class Controller:
                         if category in self.categories:
                             player.scorecard.record_scores(category, 0)
                             break
-                        Methods.print_error()
+                        print_error()
                     else:
-                        Methods.print_error()
+                        print_error()
                 if removed:
                     display_message(f"Category '{category}' removed. " \
                                     f"Total score: {player.scorecard.total_score()}")
@@ -192,7 +206,7 @@ class Controller:
         for player in self.players:
             if player.scorecard.total_score() == max_score:
                 winners.append(player.name)
-                Methods.save_score(player.name, max_score)
+                save_score(player.name, max_score)
         for player in self.players:
             display_message(f"{player.name}: {player.scorecard.total_score()} points")
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
