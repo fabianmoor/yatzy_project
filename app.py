@@ -2,6 +2,8 @@
 from src.controller import YatzyController
 from src.view import clear_screen
 
+import sys
+
 def main() -> int:
     """Main function to start the Yatzy game."""
 
@@ -22,7 +24,9 @@ def main() -> int:
                     controller.play_game()
                 case 2:
                     controller.show_highscores()
-
+                case 3:
+                    print("Quiting program...")
+                    sys.exit(0)
 
 if __name__ == "__main__":
     main()
