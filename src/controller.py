@@ -27,11 +27,6 @@ class Controller:
         ]
         self.categories = yatzy if game_type == 0 else maxi_yatzy
 
-    def show_highscores(self):
-        """Function for showing previous HighScores"""
-        clear_screen()
-        Methods.read_score()
-
     def start_game(self):
         """Start Game (Init Game)"""
         clear_screen()

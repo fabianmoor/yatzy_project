@@ -116,25 +116,43 @@ class Methods:
         path = "score.csv"
         dic = {}
 
-        # If the file already exists,
-        # update the data in the file.
+        # If the file already exists, read the data.
         if os.path.exists(path):
-            with open(path, "r", encoding = 'utf8') as f:
+            with open(path, "r", encoding='utf8') as f:
                 print("Previous players with their highscores\n")
 
-                # Reading file using a csv reader
-                # and spliting the data.
+                # Reading file using a csv reader and splitting the data.
                 csv_reader = csv.reader(f, delimiter=",")
                 for row in csv_reader:
                     if row != "":
-                        dic[row[0]] = row[1]
-                sorted_dict = dict(sorted(dic.items(), key=lambda item: item[1], reverse= True))
-                for count, key in enumerate(sorted_dict.keys()):
-                    if count == 5:       #print the first 10 key-value
+                        player = row[0]
+                        score = int(row[1])
+
+                        # Check if player is already in the dictionary
+                        if player not in dic:
+                            dic[player] = []  # Initialize an empty list for the player
+
+                        # Append the score to the player's list of scores
+                        dic[player].append(score)
+
+                # Sort each player's scores in descending order (optional)
+                for player, scores in dic.items():
+                    scores.sort(reverse=True)
+
+                # Display the top 5 scores across all players
+                sorted_scores = sorted(
+                    [(player, score) for player, scores in dic.items() for score in scores],
+                    key=lambda item: item[1],
+                    reverse=True
+                )
+
+                for count, (player, score) in enumerate(sorted_scores):
+                    if count == 5:  # Only print the top 5 scores
                         break
-                    print(f"{key:<10} {dic[key]}")
+                    print(f"{player}: {score}")
         else:
             print("Highscore not available yet")
+
     @staticmethod
     def print_error() -> None:
         print("Invalid input! Please try again!")
