@@ -98,11 +98,15 @@ class Controller:
                     # We still check if
                     # we've reached max rolls.
                     if rolls > 0:
+                        #flag to break the outer while-loop
                         flag = False
+                        
                         # Print the result.
                         clear_screen()
                         display_message((f"Round {player_round+1} Rerolls left: {rolls} {player.name}'s turn\n"))
                         display_message(f"Roll {count_rolls}: {player.values()}\n")
+                        
+                        #lock all the dices
                         player.lock_all()
                         while True:
                             try:
@@ -110,22 +114,25 @@ class Controller:
                                 "Enter dice numbers to re-roll sepereted by space (e.g., 1 3 5), "\
                                 "or press Enter to keep all: "
                                 )
+                                #if player has pushed the enter button, the flag breaks the outmost loop
+                                #to go to category selection
                                 if lock_input.strip() == '':
                                     flag = True
+                                    
+                                    #save the remaining rerolls if the game is maxiyatzy
                                     if self.game_type == 2:
                                         player.save_roll(player.get_roll()+rolls)
                                     break
-                                try:
-                                    indices = [num - 1 for num in list(set(only_nums(lock_input)))]
-                                    if (len(indices) > 0 and
-                                        ((self.game_type == 1 and all(0 <= x < 5 for x in indices)) or
-                                        (self.game_type == 2 and all(0 <= x < 6 for x in indices)))):
-                                        for index in indices:
-                                            player.unlock_dice([index + 1])
-                                        break
-                                    print_error()
-                                except ValueError:
-                                    print_error()
+                                
+                                
+                                indices = [num - 1 for num in list(set(only_nums(lock_input)))]
+                                if (len(indices) > 0 and
+                                    ((self.game_type == 1 and all(0 <= x < 5 for x in indices)) or
+                                    (self.game_type == 2 and all(0 <= x < 6 for x in indices)))):
+                                    for index in indices:
+                                        player.unlock_dice([index + 1])
+                                    break
+                                print_error()
                             except ValueError:
                                 print_error()
                         player.roll_unlocked()
