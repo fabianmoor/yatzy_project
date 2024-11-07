@@ -1,17 +1,26 @@
 """Model File"""
 import random
-import os
-import csv
 from typing import List
+from src.methods import display_message
 
 class Player:
     """Player class to initialize each player with their own set of 5 dice. Functions to
     roll the dice, lock and unlock specific dice, get the values from the dice rolls, and
     reset the dice for the next player round."""
-    def __init__(self, name: str):
+    def __init__(self, name: str, game_type: int, categories: list):
         self.name = name
-        self.scorecard = ScoreCard()
-        self.dice = [Dice() for _ in range(5)]
+        self.scorecard = ScoreCard(game_type, categories)
+        dice_count = 5 if game_type == 1 else 6
+        self.dice = [Dice() for _ in range(dice_count)]
+        self.roll = 0
+
+    def save_roll(self, roll_count: int) -> None:
+        """save the leftover rolls"""
+        self.roll = roll_count
+
+    def get_roll(self) -> int:
+        """return the saved rolls"""
+        return self.roll
 
     def roll_unlocked(self) -> List[int]:
         """Roll all the dice that are unlocked. In the beginning of the round, all dice
@@ -75,13 +84,17 @@ class Dice:
 
 class ScoreCard:
     """Class for scorecard. Enables score counting, recording, and getting the total score."""
-    def __init__(self):
-        self.scores = {}
+    def __init__(self, game_type: int, categories: list):
+        self.scores, self.used = {}, []
+        for item in categories:
+            self.scores[item] = 0
         self.upper_cat = 0
+        self.game_type = game_type
 
     def record_scores(self, category: str, score: int) -> None:
         """Record the scores for each category."""
         self.scores[category] = score
+        self.used.append(category)
         upper_category = ["ones", "twos", "threes", "fours", "fives", "sixes"]
         if category in upper_category:
             self.upper_cat += score
@@ -89,101 +102,23 @@ class ScoreCard:
     def total_score(self) -> int:
         """Return the sum of the scorecard for the player."""
         total = sum(self.scores.values())
-        if self.upper_cat >= 63:
-            total += 50
+        if self.game_type == 1:
+            if self.upper_cat >= 63:
+                total += 50
+        else:
+            if self.upper_cat >= 75:
+                total += 50
         return total
 
-    @staticmethod
-    def calculate_score(dice_values: List[int], category: str) -> int:
-        """Calculate the result of the round and return the value."""
-        if category == "ones":
-            return dice_values.count(1) * 1
-        elif category == "twos":
-            return dice_values.count(2) * 2
-        elif category == "threes":
-            return dice_values.count(3) * 3
-        elif category == "fours":
-            return dice_values.count(4) * 4
-        elif category == "fives":
-            return dice_values.count(5) * 5
-        elif category == "sixes":
-            return dice_values.count(6) * 6
-        elif category == "one_pair":
-            pairs = [i for i in set(dice_values) if dice_values.count(i) >= 2]
-            return max(pairs) * 2 if pairs else 0
-        elif category == "two_pairs":
-            pairs = [i for i in set(dice_values) if dice_values.count(i) >= 2]
-            if len(pairs) >= 2:
-                return sum(sorted(pairs)[-2:]) * 2
-            return 0
-        elif category == "three_of_a_kind":
-            for i in set(dice_values):
-                if dice_values.count(i) >= 3:
-                    return i * 3
-            return 0
-        elif category == "four_of_a_kind":
-            for i in set(dice_values):
-                if dice_values.count(i) >= 4:
-                    return i * 4
-            return 0
-        elif category == "full_house":
-            unique_values = set(dice_values)
-            if len(unique_values) == 2 and (dice_values.count(list(unique_values)[0]) in [2, 3]):
-                return sum(dice_values)
-            return 0
-        elif category == "small_straight":
-            return 15 if sorted(dice_values) == [1, 2, 3, 4, 5] else 0
-        elif category == "large_straight":
-            return 20 if sorted(dice_values) == [2, 3, 4, 5, 6] else 0
-        elif category == "yatzy":
-            return 50 if len(set(dice_values)) == 1 else 0
-        elif category == "chance":
-            return sum(dice_values)
-        else:
-            return 0
-    @staticmethod
-    def save_score(name, score):
-        """Function for saving scores"""
-        path = "score.csv"
-
-        # Check if the path is valid
-        if os.path.isfile(path):
-            with open(path, "a", encoding = 'utf8', newline="") as f:
-
-                #Opening the file as read only
-                print(f"File {path} already exists,"\
-                      f"appending highscore of {name} with {score}")
-                writer = csv.writer(f)
-                writer.writerow([name, score])
-        else:
-            # If its the first time calculating,
-            # create file and write the data.
-            with open(path, "x", encoding = 'utf8', newline= "") as f:
-                writer = csv.writer(f)
-                writer.writerow([name, score])
-                print(f"Highscore of {name} with {score} score saved to {path}")
-    @staticmethod
-    def read_score():
-        """Function for reading score"""
-        path = "score.csv"
-        dic = {}
-
-        # If the file already exists,
-        # update the data in the file.
-        if os.path.exists(path):
-            with open(path, "r", encoding = 'utf8') as f:
-                print("Previous players with their highscores\n")
-
-                # Reading file using a csv reader
-                # and spliting the data.
-                csv_reader = csv.reader(f, delimiter=",")
-                for row in csv_reader:
-                    if row != "":
-                        dic[row[0]] = row[1]
-                sorted_dict = dict(sorted(dic.items(), key=lambda item: item[1], reverse= True))
-                for count, key in enumerate(sorted_dict.keys()):
-                    if count == 5:       #print the first 10 key-value
-                        break
-                    print(f"{key:<10} {dic[key]}")
-        else:
-            print("Highscore not available yet")
+    def print_card(self) -> None:
+        """Print the scorecard"""
+        items = list(self.scores.items())
+        for i in range(0, len(items), 2):
+            if i + 1 < len(items):
+                display_message(
+                    f"{items[i][0]:<20}: {items[i][1]:<10}\t"
+                    f"{items[i + 1][0]:<20}: {items[i + 1][1]:<10}"
+                )
+            else:
+                display_message(f"{items[i][0]:<20}: {items[i][1]:<10}")
+        display_message(f"\nTotal: {self.total_score()}")

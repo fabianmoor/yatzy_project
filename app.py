@@ -1,25 +1,33 @@
 """Main Program File"""
 import sys
-from src.controller import YatzyController
-from src.view import clear_screen
+from src.controller import Controller
+from src.methods import read_score, clear_screen, print_error
 
 
 def main() -> int:
     """Main function to start the Yatzy game."""
-
-    controller = YatzyController()
+    clear_screen()
     while True:
-        # controller.show_menu()
-        clear_screen()
-        while True:
-            menu_choice = int(input("\n" \
-                                    "[1] Play Game,\n"\
-                                    "[2] Show High Score,\n" \
-                                    "[3] Quit:\n" \
-                                    "\n" \
+        try:
+            menu_choice = int(input("\n"
+                                    "[1] Play Game\n"
+                                    "[2] Show High Score\n"
+                                    "[3] Quit:\n"
+                                    "\n"
                                     "Choice: "))
+
             match menu_choice:
                 case 1:
+                    game_choice = int(input("\n"
+                                            "[1] Yatzy\n"
+                                            "[2] Maxi Yatzy\n"
+                                            "\n"
+                                            "Choice: "))
+
+                    if game_choice == 1:
+                        controller = Controller(1)
+                    else:
+                        controller = Controller(2)
                     controller.start_game()
                     controller.play_game()
                 case 2:
@@ -27,6 +35,8 @@ def main() -> int:
                 case 3:
                     print("Quiting program...")
                     sys.exit(0)
+        except ValueError:
+            print_error()
 
 if __name__ == "__main__":
     main()
