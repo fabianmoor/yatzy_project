@@ -82,19 +82,29 @@ class Dice:
         """Return the value."""
         return self.value
 
+# All the score registery happens here. Each player has their own scorecard
 class ScoreCard:
     """Class for scorecard. Enables score counting, recording, and getting the total score."""
     def __init__(self, game_type: int, categories: list):
+        # Dictionary for the categories in the scorecard and a list to
+        # check which categories have been used so far
         self.scores, self.used = {}, []
+        
+        # Initiate each category with 0 score
         for item in categories:
             self.scores[item] = 0
         self.upper_cat = 0
+        
+        # 1 = yatzy, 2 = maxiyatzy
         self.game_type = game_type
 
     def record_scores(self, category: str, score: int) -> None:
         """Record the scores for each category."""
+        # Update the score card with the right category and score
         self.scores[category] = score
+        # Append the category that has been used
         self.used.append(category)
+        # A counter for the upper category for the bonus points
         upper_category = ["ones", "twos", "threes", "fours", "fives", "sixes"]
         if category in upper_category:
             self.upper_cat += score
@@ -102,9 +112,13 @@ class ScoreCard:
     def total_score(self) -> int:
         """Return the sum of the scorecard for the player."""
         total = sum(self.scores.values())
+        # If its yatzy and player gets 63 points in the upper category
+        # they recieve 50 bonus points
         if self.game_type == 1:
             if self.upper_cat >= 63:
                 total += 50
+        # If its maxiyatzy and player gets 75 points in the upper category
+        # they recieve 50 bonus points according to wikipedia
         else:
             if self.upper_cat >= 75:
                 total += 50
@@ -112,8 +126,10 @@ class ScoreCard:
 
     def print_card(self) -> None:
         """Print the scorecard"""
+        # convert the dictionary to list for getting the length and iteration
         items = list(self.scores.items())
         for i in range(0, len(items), 2):
+            # Print the scorecard in pairs of 2 for asthetic purposes
             if i + 1 < len(items):
                 display_message(
                     f"{items[i][0]:<20}: {items[i][1]:<10}\t"
@@ -121,4 +137,5 @@ class ScoreCard:
                 )
             else:
                 display_message(f"{items[i][0]:<20}: {items[i][1]:<10}")
+        # Display the total score
         display_message(f"\nTotal: {self.total_score()}")

@@ -4,6 +4,9 @@ from collections import Counter
 import os
 import csv
 
+# Function to clear the screen and printout
+# the yatzy art. it checks for cls if its windows
+# or clear if its unix
 def clear_screen() -> None:
     """Clear the terminal."""
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -20,18 +23,27 @@ __   __    _
     """
     display_message(yatzy_art)
 
+# Function to print a message
 def display_message(message: str) -> None:
     """Display a message to the user."""
     print(message)
 
+# Get input from a user and display the prompt
 def get_input(prompt: str) -> str:
     """Get input from the user."""
     return input(prompt)
 
+# Return a list of digits from a string input
+# used in dice reroll selection
 def only_nums(ans: str) -> list[int]:
     """Extract numbers from a string."""
+    # Strip and split the string and only append the digits
+    # to the list before returning the list
     return [int(num) for num in ans.strip().split() if num.isdigit()]
 
+# Counts the occurences of the associated values
+# for the selected category and return the result
+# of the points (sum of the value)
 def upper_score(values: List[int], category: str) -> int:
     """Function to return the results of the upper scorecard
     unused"""
@@ -50,19 +62,31 @@ def upper_score(values: List[int], category: str) -> int:
         count = values.count(6) * 6
     return count
 
+# check for pair combination in the dice list and
+# return the result of the points
 def check_pairs(values: List[int], category: str) -> int:
     """Function to check for pairs in the dice values"""
+    # Get the unique values from the diceset and count each
+    # occurances of the value. if it is 2, then it is a pair
     pairs = [i for i in set(values) if values.count(i) == 2]
     if category == "one pair":
+        # Use the top pair if several pairs are present
         return max(pairs) * 2
     if category == "two pairs" and len(pairs) >= 2:
+        # Use the top two pairs if several pairs are present
         return sum(sorted(pairs)[-2:]) * 2
     if category == "three pairs" and len(pairs) == 3:
+        # since we use maximum of 6 dices, 3 pairs means
+        # all 6 dices are used so we return the sum of all
+        # the dices
         return sum(values)
     return 0
 
+# Check for duplicated values, like two-, three-, four- or
+# five-of a kind
 def check_dupes(values: List[int], category: str) -> int:
     """function to check for __ of a kind"""
+    # Count the occurences depending on the category
     for i in set(values):
         if values.count(i) >= 3 and category == "three of a kind":
             return i * 3
@@ -72,14 +96,21 @@ def check_dupes(values: List[int], category: str) -> int:
             return i * 5
     return 0
 
+# Check for the combination of dicepair or values such as
+# full house (2+3), villa (3+3) or tower (2+4)
 def check_combo(values: List[int], category: str) -> int:
     """Function to check for combinations of pairs or dupes"""
     #use Counter(list) to count the
     #occurences of each item in the list
     counts = Counter(values)
+    
+    # count the occurances of each value and save it in a list
+    # val = value, count = how many duplicates there are
     twos = [val for val, count in counts.items() if count == 2]
     threes = [val for val, count in counts.items() if count == 3]
     fours = [val for val, count in counts.items() if count == 4]
+    
+    # Calculate the result depending on the category
     if category == "full house" and len(twos) == 1 and len(threes) == 1:
         return threes[0] * 3 + twos[0] * 2
     if category == "villa" and len(threes) == 2:
@@ -88,6 +119,8 @@ def check_combo(values: List[int], category: str) -> int:
         return twos[0] * 2 + fours[0] * 4
     return 0
 
+# Check for different straight combinations. small and large
+# straight are for yatzy and full straight for maxiyatzy
 def check_straight(values: List[int], category: str) -> int:
     """Check for sequence of following integers"""
     # Define the target sequences and scores in a dictionary
@@ -101,10 +134,15 @@ def check_straight(values: List[int], category: str) -> int:
     # match the sorted dice values to the expected sequence
     if category in straight_scores:
         target_sequence, score = straight_scores[category]
+        # Check if the dice set is matching the sequence of the straight
+        # categories and return the appropriate result
         if all(element in values for element in target_sequence):
             return score
         return 0
 
+# Calculate the right score from the diceset and selected category.
+# Most if not all the calculations are done through the functions
+# above
 def calculate_score(dice_values: List[int], category: str) -> int:
     """Calculate the result of the round and return the value."""
     result = 0
@@ -124,6 +162,7 @@ def calculate_score(dice_values: List[int], category: str) -> int:
         result = sum(dice_values)
     return result
 
+# Save the name and score in a csv file
 def save_score(name, score):
     """Function for saving scores"""
     path = "score.csv"
@@ -132,24 +171,24 @@ def save_score(name, score):
     if os.path.isfile(path):
         #Opening the file as appending
         with open(path, "a", encoding = 'utf8', newline="") as f:
-            display_message(f"File {path} already exists,"\
-                f"appending highscore of {name} with {score}")
+            # Using a csv writer to right the name and score
             writer = csv.writer(f)
             writer.writerow([name, score])
     else:
-        # If its the first time calculating,
-        # create file and write the data.
+        # If its the first time playing and there is no such file,
+        # create file and write the score
         with open(path, "x", encoding = 'utf8', newline= "") as f:
             writer = csv.writer(f)
             writer.writerow([name, score])
-            display_message(f"Highscore of {name} with {score} score saved to {path}")
+    # Confirmation message of successful saving
+    display_message(f"Highscore of {name} with {score} score saved to {path}")
 
 def read_score(times: int):
     """Function for reading score"""
     path = "score.csv"
     dic = {}
 
-    # If the file already exists, read the data.
+    # If the file exists, read the data.
     if os.path.exists(path):
         with open(path, "r", encoding='utf8') as f:
             print("Previous players with their highscores\n")
@@ -157,6 +196,7 @@ def read_score(times: int):
             # Reading file using a csv reader and splitting the data.
             csv_reader = csv.reader(f, delimiter=",")
             for row in csv_reader:
+                # If the row is not empty line
                 if row != "":
                     player = row[0]
                     score = int(row[1])
@@ -168,24 +208,28 @@ def read_score(times: int):
                     # Append the score to the player's list of scores
                     dic[player].append(score)
 
-            # Sort each player's scores in descending order (optional)
+            # Sort each player's scores in descending order
             for player, scores in dic.items():
                 scores.sort(reverse=True)
 
-            # Display the top 5 scores across all players
+            # sort the players depending on the scores and add as tuple in the list
             sorted_scores = sorted(
                 [(player, score) for player, scores in dic.items() for score in scores],
                 key=lambda item: item[1],
                 reverse=True
             )
 
+            # Print out the name and corresponding score 
             for count, (player, score) in enumerate(sorted_scores):
-                if count == times:  # Only print the top 5 scores
+                # times = how many players we want the score for
+                if count == times:
                     break
                 print(f"{player}: {score}")
+    # If its the first time playing and there are no records
     else:
         print("Highscore not available yet")
 
+# Print out an error message for invalid input
 def print_error() -> None:
     """Print error message"""
     print("Invalid input! Please try again!")
@@ -331,14 +375,16 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
     # categories as a list.
     return eligible_categories
 
+# Function to print out a list of categories in pairs of two
+# side by side for asthetic purposes
 def print_cat(categories: list) -> None:
     """Print the list of categories for eligible and removal"""
     # We iterate over the eligible_categories list two elements at a time.
     for i in range(0, len(categories), 2):
-        
+
         # Check if there's a pair of categories to display.
         if i + 1 < len(categories):
-            
+
             # Display two categories side by side.
             display_message(
                 f"[{i+1}] - {categories[i]:<15}\t"\

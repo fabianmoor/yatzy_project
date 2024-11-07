@@ -81,8 +81,6 @@ class Controller:
 
                 # Reset player class
                 player.reset()
-
-                # Print who's turn it is.
                 clear_screen()
 
                 # Count players rolls
@@ -181,6 +179,11 @@ class Controller:
                             # We exit the loop.
                             break
                     display_message(player.values())
+                    
+                    # If its maxi yatzy and the player has used their 2 rerolls, we
+                    # ask if they want to use their saved rerolls, if yes, the rerolls
+                    # are added to the total rerolls and the loop continues otherwise
+                    # the loop breaks and the player gets to choose the categories
                     if rolls == 0 and self.game_type == 2 and player.get_roll() > 0:
                         while True:
                             try:
@@ -188,6 +191,8 @@ class Controller:
                                             f"{player.get_roll()} left (y/n):")).lower()
                                 if ans == 'y':
                                     rolls += player.get_roll() + 1
+                                    # reset the player reroll to 0 since we add all of the
+                                    # saved rerolls to the current rolls
                                     player.save_roll(0)
                                     break
                                 if ans == 'n':
@@ -203,6 +208,8 @@ class Controller:
                 # used categories depending on the gametype
                 eligible_categories = decide_eligible_categories(self.game_type, dice_values, player.scorecard.used, self.categories)
                 display_message(f"{player.name}'s Scorecard:")
+                
+                # Display the scorecard
                 player.scorecard.print_card()
 
                 display_message(
