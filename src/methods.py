@@ -190,52 +190,98 @@ def print_error() -> None:
     """Print error message"""
     print("Invalid input! Please try again!")
 
+# Function for generating eligible categories to put your score within.
 def decide_eligible_categories(game_type, dice_values, used, unused):
     """Decide which categories are eligible based on the dice roll."""
+    # Init list for eligible categories
     eligible_categories = []
-    counts = Counter(dice_values)  # Use Counter to get frequency of each value
+    # Use Counter to get frequency of each value
+    counts = Counter(dice_values)
+
+    # We keep track of the different
+    # values within the dice_values
+    # by converting it to a set, hence
+    # removing all the duplicates.
     unique_values = set(dice_values)
 
-    # Single numbers
+    # We make a dict with
+    # numbers as values.
     category_numbers = {'ones': 1, 'twos': 2, 'threes': 3, 'fours': 4, 'fives': 5, 'sixes': 6}
+
+    #we iteratte over the dictionary with category name and values pairs
     for category, number in category_numbers.items():
+
+        # If the number is in counts
+        # and if the category iteration
+        # element not in used_categories.
         if number in counts and category not in used:
+            # We include it into the 
+            # eligible_categories.
             eligible_categories.append(category)
 
-    # One Pair
-    if any(count >= 2 for count in counts.values()) and "one pair" not in used:
-        eligible_categories.append("one pair")
+    # We check if there are any pairs.
+    #
+    # We do this by using any() which returns
+    # True if ANY value is True.
+    # Hence we check if any element in the iteration
+    # meets the condition.
+    #
+    # Meaning if any counts.value is greater than
+    # or equal to 2 the first half of the condition
+    # is met.
+    #
+    # Finally we just check if "one_pair" also not in
+    # used_categories.
+    #
+    # If both conditions are met, we append it to the
+    # eligible list.
+    if (any(count >= 2 for count in counts.values())
+        and "one_pair" not in used):
 
-    # Two Pairs
+        # If so we append "one_pair" to the
+        # eligible_categories.
+        eligible_categories.append("one_pair")
+
+    # Here we check the other types of potential categories.
+    # Here specifically two pairs.
     pairs = [num for num, count in counts.items() if count >= 2]
     if len(pairs) >= 2 and "two pairs" not in used:
         eligible_categories.append("two pairs")
 
-    # Three Pairs
+    # similar code as above, we just check for 3 pairs
+    # only in maxi yatzy
     pairs = [num for num, count in counts.items() if count >= 2]
     if len(pairs) == 3 and "three pairs" not in used and game_type == 2:
         eligible_categories.append("three pairs")
 
-    # Three of a Kind
+    # Here we check if there is three of the same
+    # value.
     if any(count >= 3 for count in counts.values()) and "three of a kind" not in used:
         eligible_categories.append("three of a kind")
 
-    # Four of a Kind
+    # Here we check if there is four of the same
+    # value.
     if any(count >= 4 for count in counts.values()) and "four of a kind" not in used:
         eligible_categories.append("four of a kind")
 
-    # Five of a Kind
+    # Five of a kind (only in maxiYatzy)
     if any(count >= 5 for count in counts.values()) and "five of a kind" not in used:
         if game_type == 2:
             eligible_categories.append("five of a kind")
 
-    # Full House (exactly one pair and one triplet)
+    # Using this condition we can see if
+    # there is a full house.
+    # Since we need to have 2 of one num
+    # and 3 of another num.
+    # (and special case for maxi yatzy)
+    # If that condition is met, we know that there
+    # is a full house of some kind.
     if sorted(counts.values()) in ([2, 3], [1, 2, 3]) and "full house" not in used:
         if (game_type == 1 and sorted(counts.values()) == [2, 3]) or (game_type == 2 and sorted(counts.values()) == [1, 2, 3]):
             eligible_categories.append("full house")
 
 
-    # Villa (two triplets)
+    # Similar code as above but checking for Villa (two triplets)
     if sorted(counts.values()) == [3, 3] and "villa" not in used:
         if game_type == 2:
             eligible_categories.append("villa")
@@ -245,37 +291,58 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
         if game_type == 2:
             eligible_categories.append("tower")
 
-    # Small Straight (1-5 sequence)
+    # Here we check if we have a small straight.
+    # We do this by checking if all unique_values
+    # are in the list [1, 2, 3, 4, 5]
     if all(num in unique_values for num in [1, 2, 3, 4, 5]) and "small straight" not in used:
         eligible_categories.append("small straight")
 
-    # Large Straight (2-6 sequence)
+    # similar code but for Large Straight (2-6 sequence)
     if all(num in unique_values for num in [2, 3, 4, 5, 6]) and "large straight" not in used:
         eligible_categories.append("large straight")
 
-    # Full Straight (1-6 sequence)
+    # and for Full Straight (1-6 sequence)
     if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full straight" not in used:
         if game_type == 2:
             eligible_categories.append("full straight")
 
-    # Yatzy (all dice the same)
+    # Here if uniquie values == 1, it means that
+    # all dices where the same.
+    #
+    # Hence we are eligible for a yatzy.
     if len(unique_values) == 1 and "yatzy" not in used:
         eligible_categories.append("yatzy")
 
-    # Chance (always eligible if not used)
+    # Chance should always be available
+    # if it hasn't been used yet.
+    #
+    # Hence we only check if it's been used.
     if "chance" not in used:
         eligible_categories.append("chance")
 
-    # Filter based on unused
+    # Finally we iterate over the eligible categories
+    # We check if the current element is in self.categories
+    #
+    # If the condition is met, the category is kept in the
+    # new list. If not, it is removed.
     eligible_categories = [cat for cat in eligible_categories if cat in unused]
+
+    # We finally return the eligible
+    # categories as a list.
     return eligible_categories
 
 def print_cat(categories: list) -> None:
     """Print the list of categories for eligible and removal"""
+    # We iterate over the eligible_categories list two elements at a time.
     for i in range(0, len(categories), 2):
+        
+        # Check if there's a pair of categories to display.
         if i + 1 < len(categories):
+            
+            # Display two categories side by side.
             display_message(
                 f"[{i+1}] - {categories[i]:<15}\t"\
                 f"[{i+2}] - {categories[i + 1]:<15}")
         else:
+            # If only one category remains, display it alone.
             display_message(f"[{i+1}] - {categories[i]:<15}")

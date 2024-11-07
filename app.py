@@ -31,7 +31,8 @@ def main() -> int:
                     controller.start_game()
                     controller.play_game()
                 case 2:
-                    controller.show_highscores()
+                    clear_screen()
+                    read_score(10)
                 case 3:
                     print("Quiting program...")
                     sys.exit(0)
