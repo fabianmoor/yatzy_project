@@ -53,22 +53,22 @@ def upper_score(values: List[int], category: str) -> int:
 def check_pairs(values: List[int], category: str) -> int:
     """Function to check for pairs in the dice values"""
     pairs = [i for i in set(values) if values.count(i) == 2]
-    if category == "one_pair":
+    if category == "one pair":
         return max(pairs) * 2
-    if category == "two_pairs" and len(pairs) >= 2:
+    if category == "two pairs" and len(pairs) >= 2:
         return sum(sorted(pairs)[-2:]) * 2
-    if category == "three_pairs" and len(pairs) == 3:
+    if category == "three pairs" and len(pairs) == 3:
         return sum(values)
     return 0
 
 def check_dupes(values: List[int], category: str) -> int:
-    """function to check for ___of_a_kind"""
+    """function to check for __ of a kind"""
     for i in set(values):
-        if values.count(i) >= 3 and category == "three_of_a_kind":
+        if values.count(i) >= 3 and category == "three of a kind":
             return i * 3
-        if values.count(i) >= 4 and category == "four_of_a_kind":
+        if values.count(i) >= 4 and category == "four of a kind":
             return i * 4
-        if values.count(i) >= 5 and category == "five_of_a_kind":
+        if values.count(i) >= 5 and category == "five of a kind":
             return i * 5
     return 0
 
@@ -80,7 +80,7 @@ def check_combo(values: List[int], category: str) -> int:
     twos = [val for val, count in counts.items() if count == 2]
     threes = [val for val, count in counts.items() if count == 3]
     fours = [val for val, count in counts.items() if count == 4]
-    if category == "full_house" and len(twos) == 1 and len(threes) == 1:
+    if category == "full house" and len(twos) == 1 and len(threes) == 1:
         return threes[0] * 3 + twos[0] * 2
     if category == "villa" and len(threes) == 2:
         return threes[0] * 3 + threes[1] * 3
@@ -92,9 +92,9 @@ def check_straight(values: List[int], category: str) -> int:
     """Check for sequence of following integers"""
     # Define the target sequences and scores in a dictionary
     straight_scores = {
-        "small_straight": ([1, 2, 3, 4, 5], 15),
-        "large_straight": ([2, 3, 4, 5, 6], 20),
-        "full_straight":  ([1, 2, 3, 4, 5, 6], 21),
+        "small straight": ([1, 2, 3, 4, 5], 15),
+        "large straight": ([2, 3, 4, 5, 6], 20),
+        "full straight":  ([1, 2, 3, 4, 5, 6], 21),
     }
 
     # Check if the category is a straight, and if so,
@@ -110,13 +110,13 @@ def calculate_score(dice_values: List[int], category: str) -> int:
     result = 0
     if category in ["ones", "twos", "threes", "fours", "fives", "sixes"]:
         result = upper_score(dice_values, category)
-    elif category in ["one_pair", "two_pairs", "three_pairs"]:
+    elif category in ["one pair", "two pairs", "three pairs"]:
         result = check_pairs(dice_values, category)
-    elif category in ["three_of_a_kind", "four_of_a_kind", "five_of_a_kind"]:
+    elif category in ["three of a kind", "four of a kind", "five of a kind"]:
         result = check_dupes(dice_values, category)
-    elif category in ["full_house", "villa", "tower"]:
+    elif category in ["full house", "villa", "tower"]:
         result = check_combo(dice_values, category)
-    elif category in ["small_straight", "large_straight", "full_straight"]:
+    elif category in ["small straight", "large straight", "full straight"]:
         result = check_straight(dice_values, category)
     elif category == "yatzy":
         result = 50 if len(set(dice_values)) == 1 else 0
@@ -132,7 +132,7 @@ def save_score(name, score):
     if os.path.isfile(path):
         #Opening the file as appending
         with open(path, "a", encoding = 'utf8', newline="") as f:
-            print(f"File {path} already exists,"\
+            display_message(f"File {path} already exists,"\
                 f"appending highscore of {name} with {score}")
             writer = csv.writer(f)
             writer.writerow([name, score])
@@ -142,7 +142,7 @@ def save_score(name, score):
         with open(path, "x", encoding = 'utf8', newline= "") as f:
             writer = csv.writer(f)
             writer.writerow([name, score])
-            print(f"Highscore of {name} with {score} score saved to {path}")
+            display_message(f"Highscore of {name} with {score} score saved to {path}")
 
 def read_score(times: int):
     """Function for reading score"""
@@ -203,36 +203,36 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
             eligible_categories.append(category)
 
     # One Pair
-    if any(count >= 2 for count in counts.values()) and "one_pair" not in used:
-        eligible_categories.append("one_pair")
+    if any(count >= 2 for count in counts.values()) and "one pair" not in used:
+        eligible_categories.append("one pair")
 
     # Two Pairs
     pairs = [num for num, count in counts.items() if count >= 2]
-    if len(pairs) >= 2 and "two_pairs" not in used:
-        eligible_categories.append("two_pairs")
+    if len(pairs) >= 2 and "two pairs" not in used:
+        eligible_categories.append("two pairs")
 
     # Three Pairs
     pairs = [num for num, count in counts.items() if count >= 2]
-    if len(pairs) == 3 and "three_pairs" not in used and game_type == 2:
-        eligible_categories.append("three_pairs")
+    if len(pairs) == 3 and "three pairs" not in used and game_type == 2:
+        eligible_categories.append("three pairs")
 
     # Three of a Kind
-    if any(count >= 3 for count in counts.values()) and "three_of_a_kind" not in used:
-        eligible_categories.append("three_of_a_kind")
+    if any(count >= 3 for count in counts.values()) and "three of a kind" not in used:
+        eligible_categories.append("three of a kind")
 
     # Four of a Kind
-    if any(count >= 4 for count in counts.values()) and "four_of_a_kind" not in used:
-        eligible_categories.append("four_of_a_kind")
+    if any(count >= 4 for count in counts.values()) and "four of a kind" not in used:
+        eligible_categories.append("four of a kind")
 
     # Five of a Kind
-    if any(count >= 5 for count in counts.values()) and "five_of_a_kind" not in used:
+    if any(count >= 5 for count in counts.values()) and "five of a kind" not in used:
         if game_type == 2:
-            eligible_categories.append("five_of_a_kind")
+            eligible_categories.append("five of a kind")
 
     # Full House (exactly one pair and one triplet)
-    if sorted(counts.values()) in ([2, 3], [1, 2, 3]) and "full_house" not in used:
+    if sorted(counts.values()) in ([2, 3], [1, 2, 3]) and "full house" not in used:
         if (game_type == 1 and sorted(counts.values()) == [2, 3]) or (game_type == 2 and sorted(counts.values()) == [1, 2, 3]):
-            eligible_categories.append("full_house")
+            eligible_categories.append("full house")
 
 
     # Villa (two triplets)
@@ -246,17 +246,17 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
             eligible_categories.append("tower")
 
     # Small Straight (1-5 sequence)
-    if all(num in unique_values for num in [1, 2, 3, 4, 5]) and "small_straight" not in used:
-        eligible_categories.append("small_straight")
+    if all(num in unique_values for num in [1, 2, 3, 4, 5]) and "small straight" not in used:
+        eligible_categories.append("small straight")
 
     # Large Straight (2-6 sequence)
-    if all(num in unique_values for num in [2, 3, 4, 5, 6]) and "large_straight" not in used:
-        eligible_categories.append("large_straight")
+    if all(num in unique_values for num in [2, 3, 4, 5, 6]) and "large straight" not in used:
+        eligible_categories.append("large straight")
 
     # Full Straight (1-6 sequence)
-    if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full_straight" not in used:
+    if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full straight" not in used:
         if game_type == 2:
-            eligible_categories.append("full_straight")
+            eligible_categories.append("full straight")
 
     # Yatzy (all dice the same)
     if len(unique_values) == 1 and "yatzy" not in used:
@@ -269,3 +269,13 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
     # Filter based on unused
     eligible_categories = [cat for cat in eligible_categories if cat in unused]
     return eligible_categories
+
+def print_cat(categories: list) -> None:
+    """Print the list of categories for eligible and removal"""
+    for i in range(0, len(categories), 2):
+        if i + 1 < len(categories):
+            display_message(
+                f"[{i+1}] - {categories[i]:<15}\t"\
+                f"[{i+2}] - {categories[i + 1]:<15}")
+        else:
+            display_message(f"[{i+1}] - {categories[i]:<15}")

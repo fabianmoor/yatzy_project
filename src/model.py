@@ -1,14 +1,15 @@
 """Model File"""
 import random
 from typing import List
+from src.methods import display_message
 
 class Player:
     """Player class to initialize each player with their own set of 5 dice. Functions to
     roll the dice, lock and unlock specific dice, get the values from the dice rolls, and
     reset the dice for the next player round."""
-    def __init__(self, name: str, game_type: int):
+    def __init__(self, name: str, game_type: int, categories: list):
         self.name = name
-        self.scorecard = ScoreCard(game_type)
+        self.scorecard = ScoreCard(game_type, categories)
         dice_count = 5 if game_type == 1 else 6
         self.dice = [Dice() for _ in range(dice_count)]
         self.roll = 0
@@ -83,14 +84,17 @@ class Dice:
 
 class ScoreCard:
     """Class for scorecard. Enables score counting, recording, and getting the total score."""
-    def __init__(self, game_type: int):
-        self.scores = {}
+    def __init__(self, game_type: int, categories: list):
+        self.scores, self.used = {}, []
+        for item in categories:
+            self.scores[item] = 0
         self.upper_cat = 0
         self.game_type = game_type
 
     def record_scores(self, category: str, score: int) -> None:
         """Record the scores for each category."""
         self.scores[category] = score
+        self.used.append(category)
         upper_category = ["ones", "twos", "threes", "fours", "fives", "sixes"]
         if category in upper_category:
             self.upper_cat += score
@@ -105,3 +109,16 @@ class ScoreCard:
             if self.upper_cat >= 75:
                 total += 50
         return total
+
+    def print_card(self) -> None:
+        """Print the scorecard"""
+        items = list(self.scores.items())
+        for i in range(0, len(items), 2):
+            if i + 1 < len(items):
+                display_message(
+                    f"{items[i][0]:<20}: {items[i][1]:<10}\t"
+                    f"{items[i + 1][0]:<20}: {items[i + 1][1]:<10}"
+                )
+            else:
+                display_message(f"{items[i][0]:<20}: {items[i][1]:<10}")
+        display_message(f"\nTotal: {self.total_score()}")

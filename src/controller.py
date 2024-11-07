@@ -1,7 +1,7 @@
 """Controller file"""
 from src.model import Player
 from src.methods import print_error, clear_screen, display_message, read_score, get_input, only_nums
-from src.methods import decide_eligible_categories, calculate_score, save_score
+from src.methods import decide_eligible_categories, calculate_score, save_score, print_cat
 
 
 class Controller:
@@ -13,19 +13,18 @@ class Controller:
         self.players = []
         yatzy = [
             "ones", "twos", "threes", "fours", "fives", "sixes",
-            "one_pair", "two_pairs", "three_of_a_kind", "four_of_a_kind",
-            "small_straight", "large_straight", "full_house", "chance", "yatzy"
+            "one pair", "two pairs", "three of a kind", "four of a kind",
+            "small straight", "large straight", "full house", "chance", "yatzy"
         ]
         # Define different score categories
         maxi_yatzy = [
             "ones", "twos", "threes", "fours", "fives", "sixes",
-            "one_pair", "two_pairs", "three_pairs", "three_of_a_kind",
-            "four_of_a_kind", "five_of_a_kind", "small_straight",
-            "large_straight", "full_straight", "full_house", "villa",
+            "one pair", "two pairs", "three pairs", "three of a kind",
+            "four of a kind", "five of a kind", "small straight",
+            "large straight", "full straight", "full house", "villa",
             "tower", "chance", "yatzy"
         ]
         self.categories = yatzy if game_type == 1 else maxi_yatzy
-        print(f"Game Type: {game_type}")
 
     def start_game(self):
         """Start Game (Init Game)"""
@@ -49,10 +48,10 @@ class Controller:
         for i in range(num_players):
 
             # Get name for each player
-            name = get_input(f"Enter name for player {i+1}: ")
+            name = get_input(f"Enter name for player {i+1}: ").capitalize()
 
             # Add player to player list.
-            self.players.append(Player(name, self.game_type))
+            self.players.append(Player(name, self.game_type, self.categories))
 
     def play_game(self) -> None:
         """Main game loop for playing Yatzy."""
@@ -76,13 +75,12 @@ class Controller:
                 # Print who's turn it is.
                 clear_screen()
 
-                removed = False
-
                 # Count players rolls
                 # since all should have
                 # 3 total throws.
                 rolls = 3
                 count_rolls = 0
+                
 
                 # Check that player
                 # hasn't rolled more
@@ -105,7 +103,7 @@ class Controller:
                         # Print the result.
                         clear_screen()
                         display_message((f"Round {player_round+1} Rerolls left: {rolls} {player.name}'s turn\n"))
-                        display_message(f"Roll {rolls+1}: {player.values()}\n")
+                        display_message(f"Roll {count_rolls}: {player.values()}\n")
                         player.lock_all()
                         while True:
                             lock_input = get_input(
@@ -135,6 +133,9 @@ class Controller:
                         player.roll_unlocked()
                         if flag is True:
                             break
+
+                    display_message(f"Your dice: {player.values()}")
+
                     if rolls == 0 and self.game_type == 2 and player.get_roll() > 0:
                         while True:
                             ans = input((f"Do you want to use your saved rerolls? "
@@ -146,66 +147,49 @@ class Controller:
                             if ans == 'n':
                                 break
                             print_error()
-
-                    dice_values = player.values()
-                    clear_screen()
-                    display_message(f"Your dice: {dice_values}")
-
-                used_categories = list(player.scorecard.scores.keys())
-                eligible_categories = decide_eligible_categories(self.game_type, dice_values, used_categories, self.categories)
+                clear_screen()
+                dice_values = player.values()
+                eligible_categories = decide_eligible_categories(self.game_type, dice_values, player.scorecard.used, self.categories)
+                display_message(f"{player.name}'s Scorecard:")
+                player.scorecard.print_card()
 
                 display_message(
                     "\nEligible categories based on your dice:\n"
                 )
-                for i in range(0, len(eligible_categories), 2):
-                    if i + 1 < len(eligible_categories):
-                        display_message(
-                            f"{eligible_categories[i]:<15}\t"\
-                            f"{eligible_categories[i + 1]:<15}")
-                    else:
-                        display_message(f"{eligible_categories[i]:<15}")
-
+                display_message(f"Your dice: {player.values()}\n")
+                print_cat(eligible_categories)
 
                 while True:
-                    category = get_input("\nSelect a category to score in "\
-                                         "or type 'x' to dispose category: ").lower()
-                    if category in eligible_categories:
+                    select = int(get_input("\nSelect a category to score in "\
+                                         "or type '0' to dispose category: ").lower())
+                    if select <= len(eligible_categories) and select > 0:
                         clear_screen()
+                        category = eligible_categories[select - 1]
                         score = calculate_score(dice_values, category)
                         player.scorecard.record_scores(category, score)
+                        display_message(f"Scored {score} points in category {category}\n")
                         break
-                    elif category == "x":
-                        removed = True
+                    if category == 0:
                         clear_screen()
+                        display_message(f"Your dice: {player.values()}")
                         display_message("Categories eligible for removal:\n")
 
                         not_eligible = [cat for cat in self.categories if cat not
-                                        in (eligible_categories + used_categories)]
-                        formatted_output = "\n".join(
-                            [f"{not_eligible[i]:<15}\t\t{not_eligible[i + 1]:<15}"
-                            if i + 1 < len(not_eligible) else f"{not_eligible[i]:<15}"
-                            for i in range(0, len(not_eligible), 2)]
-                        )
-                        display_message(formatted_output)
-
-                        category = get_input("\nWhich category would you like "\
-                                                      "to remove: ").lower()
-                        if category in self.categories:
+                                        in (eligible_categories + player.scorecard.used)]
+                        print_cat(not_eligible)
+                        category = int(get_input("\nWhich category would you like "\
+                                                      "to remove: (ex. 3)"))
+                        if category <= len(not_eligible):
                             player.scorecard.record_scores(category, 0)
+                            display_message(f"Category '{not_eligible[category - 1]}' removed. ")
                             break
                         print_error()
                     else:
                         print_error()
-                if removed:
-                    display_message(f"Category '{category}' removed. " \
-                                    f"Total score: {player.scorecard.total_score()}")
-                else:
-                    display_message(f"Scored {score} points in category '{category}'. " \
-                                    f"Total score: {player.scorecard.total_score()}")
-                get_input("Press enter to continue...")
-                removed = False
-
-        display_message("\nGame over! Final scores:")
+                player.scorecard.print_card()
+                get_input("\nPress enter to continue...")
+        clear_screen()
+        display_message("Game over! Final scores:")
         max_score = max(player.scorecard.total_score() for player in self.players)
         winners = []
         for player in self.players:

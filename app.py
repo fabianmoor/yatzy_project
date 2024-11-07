@@ -1,4 +1,5 @@
 """Main Program File"""
+import sys
 from src.controller import Controller
 from src.methods import read_score, clear_screen, print_error
 
@@ -34,7 +35,7 @@ def main() -> int:
                     read_score(10)
 
                 case 3:
-                    break  # Exit the loop to quit the program
+                    sys.exit(0)  # Exit the loop to quit the program
 
         except ValueError:
             print_error()
