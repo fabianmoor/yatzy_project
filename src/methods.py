@@ -280,11 +280,11 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
     # If both conditions are met, we append it to the
     # eligible list.
     if (any(count >= 2 for count in counts.values())
-        and "one_pair" not in used):
+        and "one pair" not in used):
 
         # If so we append "one_pair" to the
         # eligible_categories.
-        eligible_categories.append("one_pair")
+        eligible_categories.append("one pair")
 
     # Here we check the other types of potential categories.
     # Here specifically two pairs.
