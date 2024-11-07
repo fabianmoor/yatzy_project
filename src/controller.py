@@ -98,7 +98,7 @@ class Controller:
 
                     # We still check if
                     # we've reached max rolls.
-                    if rolls >= 1:
+                    if rolls > 0:
                         flag = False
                         # Print the result.
                         clear_screen()
@@ -107,7 +107,7 @@ class Controller:
                         player.lock_all()
                         while True:
                             lock_input = get_input(
-                            "Enter dice numbers to re-roll (e.g., 1 3 5), "\
+                            "Enter dice numbers to re-roll sepereted by space (e.g., 1 3 5), "\
                             "or press Enter to keep all: "
                             )
                             if lock_input.strip() == '':
@@ -133,9 +133,7 @@ class Controller:
                         player.roll_unlocked()
                         if flag is True:
                             break
-
-                    display_message(f"Your dice: {player.values()}")
-
+                    display_message(player.values())
                     if rolls == 0 and self.game_type == 2 and player.get_roll() > 0:
                         while True:
                             ans = input((f"Do you want to use your saved rerolls? "
@@ -160,16 +158,18 @@ class Controller:
                 print_cat(eligible_categories)
 
                 while True:
-                    select = int(get_input("\nSelect a category to score in "\
-                                         "or type '0' to dispose category: ").lower())
-                    if select <= len(eligible_categories) and select > 0:
-                        clear_screen()
-                        category = eligible_categories[select - 1]
-                        score = calculate_score(dice_values, category)
-                        player.scorecard.record_scores(category, score)
-                        display_message(f"Scored {score} points in category {category}\n")
-                        break
-                    if category == 0:
+                    select = get_input("\nSelect a category to score in "\
+                                         "or type 'x' to dispose category: ")
+                    if select.isdigit():
+                        if 0 < int(select) <= len(eligible_categories):
+                            clear_screen()
+                            category = eligible_categories[int(select) - 1]
+                            score = calculate_score(dice_values, category)
+                            player.scorecard.record_scores(category, score)
+                            display_message(f"Scored {score} points in category {category}\n")
+                            break
+                        print_error()
+                    if select in ("x", "X"):
                         clear_screen()
                         display_message(f"Your dice: {player.values()}")
                         display_message("Categories eligible for removal:\n")
@@ -187,6 +187,7 @@ class Controller:
                     else:
                         print_error()
                 player.scorecard.print_card()
+                display_message(f"Saved rerolls: {player.get_roll()}")
                 get_input("\nPress enter to continue...")
         clear_screen()
         display_message("Game over! Final scores:")
