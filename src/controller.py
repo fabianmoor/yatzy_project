@@ -104,7 +104,7 @@ class Controller:
                         flag = False
                         # Print the result.
                         clear_screen()
-                        display_message((f"Round {player_round+1} Current rolls: {rolls} {player.name}'s turn\n"))
+                        display_message((f"Round {player_round+1} Rerolls left: {rolls} {player.name}'s turn\n"))
                         display_message(f"Roll {rolls+1}: {player.values()}\n")
                         player.lock_all()
                         while True:
@@ -120,7 +120,11 @@ class Controller:
                             try:
                                 indices = [num - 1 for num in list(set(only_nums(lock_input)))]
                                 if len(indices) > 0:
-                                    if all(0 <= x < 5 for x in indices):
+                                    if all(0 <= x < 5 for x in indices) and self.game_type == 1:
+                                        for index in indices:
+                                            player.unlock_dice([index+1])
+                                        break
+                                    if all(0 <= x < 6 for x in indices) and self.game_type == 2:
                                         for index in indices:
                                             player.unlock_dice([index+1])
                                         break
@@ -131,20 +135,21 @@ class Controller:
                         player.roll_unlocked()
                         if flag is True:
                             break
-                    if rolls == 0 and self.game_type == 2:
+                    if rolls == 0 and self.game_type == 2 and player.get_roll() > 0:
                         while True:
                             ans = input((f"Do you want to use your saved rerolls? "
                                          f"{player.get_roll()} left (y/n):")).lower()
                             if ans == 'y':
                                 rolls += player.get_roll()
+                                player.save_roll(0)
                                 break
                             if ans == 'n':
                                 break
                             print_error()
 
-                dice_values = player.values()
-                clear_screen()
-                display_message(f"Your dice: {dice_values}")
+                    dice_values = player.values()
+                    clear_screen()
+                    display_message(f"Your dice: {dice_values}")
 
                 used_categories = list(player.scorecard.scores.keys())
                 eligible_categories = decide_eligible_categories(self.game_type, dice_values, used_categories, self.categories)

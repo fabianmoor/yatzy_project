@@ -213,7 +213,7 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
 
     # Three Pairs
     pairs = [num for num, count in counts.items() if count >= 2]
-    if len(pairs) == 2 and "three_pairs" not in used and game_type == 2:
+    if len(pairs) == 3 and "three_pairs" not in used and game_type == 2:
         eligible_categories.append("three_pairs")
 
     # Three of a Kind
@@ -230,8 +230,10 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
             eligible_categories.append("five_of_a_kind")
 
     # Full House (exactly one pair and one triplet)
-    if sorted(counts.values()) == [2, 3] and "full_house" not in used:
-        eligible_categories.append("full_house")
+    if sorted(counts.values()) in ([2, 3], [1, 2, 3]) and "full_house" not in used:
+        if (game_type == 1 and sorted(counts.values()) == [2, 3]) or (game_type == 2 and sorted(counts.values()) == [1, 2, 3]):
+            eligible_categories.append("full_house")
+
 
     # Villa (two triplets)
     if sorted(counts.values()) == [3, 3] and "villa" not in used:
