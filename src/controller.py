@@ -80,7 +80,6 @@ class Controller:
                 # 3 total throws.
                 rolls = 3
                 count_rolls = 0
-                
 
                 # Check that player
                 # hasn't rolled more
@@ -106,45 +105,47 @@ class Controller:
                         display_message(f"Roll {count_rolls}: {player.values()}\n")
                         player.lock_all()
                         while True:
-                            lock_input = get_input(
-                            "Enter dice numbers to re-roll sepereted by space (e.g., 1 3 5), "\
-                            "or press Enter to keep all: "
-                            )
-                            if lock_input.strip() == '':
-                                flag = True
-                                if self.game_type == 2:
-                                    player.save_roll(player.get_roll()+rolls)
-                                break
                             try:
-                                indices = [num - 1 for num in list(set(only_nums(lock_input)))]
-                                if len(indices) > 0:
-                                    if all(0 <= x < 5 for x in indices) and self.game_type == 1:
+                                lock_input = get_input(
+                                "Enter dice numbers to re-roll sepereted by space (e.g., 1 3 5), "\
+                                "or press Enter to keep all: "
+                                )
+                                if lock_input.strip() == '':
+                                    flag = True
+                                    if self.game_type == 2:
+                                        player.save_roll(player.get_roll()+rolls)
+                                    break
+                                try:
+                                    indices = [num - 1 for num in list(set(only_nums(lock_input)))]
+                                    if (len(indices) > 0 and
+                                        ((self.game_type == 1 and all(0 <= x < 5 for x in indices)) or
+                                        (self.game_type == 2 and all(0 <= x < 6 for x in indices)))):
                                         for index in indices:
-                                            player.unlock_dice([index+1])
+                                            player.unlock_dice([index + 1])
                                         break
-                                    if all(0 <= x < 6 for x in indices) and self.game_type == 2:
-                                        for index in indices:
-                                            player.unlock_dice([index+1])
-                                        break
-                                print_error()
+                                    print_error()
+                                except ValueError:
+                                    print_error()
                             except ValueError:
                                 print_error()
-
                         player.roll_unlocked()
                         if flag is True:
                             break
                     display_message(player.values())
                     if rolls == 0 and self.game_type == 2 and player.get_roll() > 0:
                         while True:
-                            ans = input((f"Do you want to use your saved rerolls? "
-                                         f"{player.get_roll()} left (y/n):")).lower()
-                            if ans == 'y':
-                                rolls += player.get_roll()
-                                player.save_roll(0)
-                                break
-                            if ans == 'n':
-                                break
-                            print_error()
+                            try:
+                                ans = get_input((f"Do you want to use your saved rerolls? "
+                                            f"{player.get_roll()} left (y/n):")).lower()
+                                if ans == 'y':
+                                    rolls += player.get_roll() + 1
+                                    player.save_roll(0)
+                                    break
+                                if ans == 'n':
+                                    break
+                                print_error()
+                            except ValueError:
+                                print_error()
                 clear_screen()
                 dice_values = player.values()
                 eligible_categories = decide_eligible_categories(self.game_type, dice_values, player.scorecard.used, self.categories)
@@ -177,13 +178,16 @@ class Controller:
                         not_eligible = [cat for cat in self.categories if cat not
                                         in (eligible_categories + player.scorecard.used)]
                         print_cat(not_eligible)
-                        category = int(get_input("\nWhich category would you like "\
-                                                      "to remove: (ex. 3)"))
-                        if category <= len(not_eligible):
-                            player.scorecard.record_scores(category, 0)
-                            display_message(f"Category '{not_eligible[category - 1]}' removed. ")
-                            break
-                        print_error()
+                        try:
+                            category = int(get_input("\nWhich category would you like "\
+                                                        "to remove: (ex. 3)"))
+                            if category <= len(not_eligible):
+                                player.scorecard.record_scores(category, 0)
+                                display_message(f"Category '{not_eligible[category - 1]}' removed. ")
+                                break
+                            print_error()
+                        except ValueError:
+                            print_error()
                     else:
                         print_error()
                 player.scorecard.print_card()
@@ -194,9 +198,8 @@ class Controller:
         max_score = max(player.scorecard.total_score() for player in self.players)
         winners = []
         for player in self.players:
+            display_message(f"{player.name}: {player.scorecard.total_score()} points")
             if player.scorecard.total_score() == max_score:
                 winners.append(player.name)
                 save_score(player.name, max_score)
-        for player in self.players:
-            display_message(f"{player.name}: {player.scorecard.total_score()} points")
         display_message(f"The winner(s): {', '.join(winners)} with {max_score} points!")
