@@ -64,23 +64,26 @@ def upper_score(values: List[int], category: str) -> int:
 # Check for pair combination in the dice list and
 # return the result of the points
 def check_pairs(values: List[int], category: str) -> int:
-    """Function to check for pairs in the dice values"""
-    # Get the unique values from the dice set and count each
-    # occurrence of the value. If it is 2 or more, then it is a pair
-    pairs = [i for i in set(values) if values.count(i) >= 2]
+    """Function to check for pairs in the dice values."""
+    # Identify numbers that occur two or more times (pairs)
+    pairs = []
+    for i in set(values):
+        if values.count(i) >= 2:
+            pairs.append(i)
+    # Sort the pairs in descending order to prioritize higher pairs
     pairs.sort(reverse=True)
+
     if category == "one pair" and len(pairs) >= 1:
-        # Use the top pair if several pairs are present
+        # Use the highest pair
         return pairs[0] * 2
     if category == "two pairs" and len(pairs) >= 2:
-        # Use the top two pairs if several pairs are present
+        # Sum the two highest pairs
         return (pairs[0] * 2) + (pairs[1] * 2)
     if category == "three pairs" and len(pairs) >= 3:
-        # Since we use maximum of 6 dices, 3 pairs means
-        # all 6 dices are used so we return the sum of all
-        # the dices
-        return sum(values)
+        # Sum the three highest pairs (only in Maxi Yatzy)
+        return (pairs[0] * 2) + (pairs[1] * 2) + (pairs[2] * 2)
     return 0
+
 
 # Check for duplicated values, like two-, three-, four- or
 # five-of a kind
@@ -103,13 +106,13 @@ def check_combo(values: List[int], category: str) -> int:
     # Use Counter(list) to count the
     # occurrences of each item in the list
     counts = Counter(values)
-    
+
     # Count the occurrences of each value and save it in a list
     # val = value, count = how many duplicates there are
     twos = [val for val, count in counts.items() if count == 2]
     threes = [val for val, count in counts.items() if count == 3]
     fours = [val for val, count in counts.items() if count == 4]
-    
+
     # Calculate the result depending on the category
     if category == "full house" and len(twos) == 1 and len(threes) == 1:
         return threes[0] * 3 + twos[0] * 2
@@ -219,7 +222,7 @@ def read_score(times: int):
                 reverse=True
             )
 
-            # Print out the name and corresponding score 
+            # Print out the name and corresponding score
             for count, (player, score) in enumerate(sorted_scores):
                 # times = how many players we want the score for
                 if count == times:
@@ -259,7 +262,7 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
         # and if the category iteration
         # element not in used_categories.
         if number in counts and category not in used:
-            # We include it into the 
+            # We include it into the
             # eligible_categories.
             eligible_categories.append(category)
 
@@ -288,7 +291,8 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
         eligible_categories.append("four of a kind")
 
     # Check for "five of a kind" (only in Maxi Yatzy)
-    if any(count >= 5 for count in counts.values()) and "five of a kind" not in used and game_type == 2:
+    if (any(count >= 5 for count in counts.values())
+        and "five of a kind" not in used and game_type == 2):
         eligible_categories.append("five of a kind")
 
     # Get sorted list of counts for checking combinations
@@ -315,7 +319,8 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
         eligible_categories.append("large straight")
 
     # Check for "full straight" (only in Maxi Yatzy)
-    if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full straight" not in used and game_type == 2:
+    if (all(num in unique_values for num in [1, 2, 3, 4, 5, 6])
+        and "full straight" not in used and game_type == 2):
         eligible_categories.append("full straight")
 
     # Check for "yatzy"
