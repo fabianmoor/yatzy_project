@@ -41,12 +41,11 @@ def only_nums(ans: str) -> list[int]:
     # to the list before returning the list
     return [int(num) for num in ans.strip().split() if num.isdigit()]
 
-# Counts the occurences of the associated values
+# Counts the occurrences of the associated values
 # for the selected category and return the result
 # of the points (sum of the value)
 def upper_score(values: List[int], category: str) -> int:
-    """Function to return the results of the upper scorecard
-    unused"""
+    """Function to return the results of the upper scorecard"""
     count = 0
     if category == "ones":
         count = values.count(1) * 1
@@ -62,21 +61,22 @@ def upper_score(values: List[int], category: str) -> int:
         count = values.count(6) * 6
     return count
 
-# check for pair combination in the dice list and
+# Check for pair combination in the dice list and
 # return the result of the points
 def check_pairs(values: List[int], category: str) -> int:
     """Function to check for pairs in the dice values"""
-    # Get the unique values from the diceset and count each
-    # occurances of the value. if it is 2, then it is a pair
-    pairs = [i for i in set(values) if values.count(i) == 2]
-    if category == "one pair":
+    # Get the unique values from the dice set and count each
+    # occurrence of the value. If it is 2 or more, then it is a pair
+    pairs = [i for i in set(values) if values.count(i) >= 2]
+    pairs.sort(reverse=True)
+    if category == "one pair" and len(pairs) >= 1:
         # Use the top pair if several pairs are present
-        return max(pairs) * 2
+        return pairs[0] * 2
     if category == "two pairs" and len(pairs) >= 2:
         # Use the top two pairs if several pairs are present
-        return sum(sorted(pairs)[-2:]) * 2
-    if category == "three pairs" and len(pairs) == 3:
-        # since we use maximum of 6 dices, 3 pairs means
+        return (pairs[0] * 2) + (pairs[1] * 2)
+    if category == "three pairs" and len(pairs) >= 3:
+        # Since we use maximum of 6 dices, 3 pairs means
         # all 6 dices are used so we return the sum of all
         # the dices
         return sum(values)
@@ -85,8 +85,8 @@ def check_pairs(values: List[int], category: str) -> int:
 # Check for duplicated values, like two-, three-, four- or
 # five-of a kind
 def check_dupes(values: List[int], category: str) -> int:
-    """function to check for __ of a kind"""
-    # Count the occurences depending on the category
+    """Function to check for __ of a kind"""
+    # Count the occurrences depending on the category
     for i in set(values):
         if values.count(i) >= 3 and category == "three of a kind":
             return i * 3
@@ -96,15 +96,15 @@ def check_dupes(values: List[int], category: str) -> int:
             return i * 5
     return 0
 
-# Check for the combination of dicepair or values such as
+# Check for the combination of dice pair or values such as
 # full house (2+3), villa (3+3) or tower (2+4)
 def check_combo(values: List[int], category: str) -> int:
     """Function to check for combinations of pairs or dupes"""
-    #use Counter(list) to count the
-    #occurences of each item in the list
+    # Use Counter(list) to count the
+    # occurrences of each item in the list
     counts = Counter(values)
     
-    # count the occurances of each value and save it in a list
+    # Count the occurrences of each value and save it in a list
     # val = value, count = how many duplicates there are
     twos = [val for val, count in counts.items() if count == 2]
     threes = [val for val, count in counts.items() if count == 3]
@@ -119,8 +119,8 @@ def check_combo(values: List[int], category: str) -> int:
         return twos[0] * 2 + fours[0] * 4
     return 0
 
-# Check for different straight combinations. small and large
-# straight are for yatzy and full straight for maxiyatzy
+# Check for different straight combinations. Small and large
+# straight are for Yatzy and full straight for MaxiYatzy
 def check_straight(values: List[int], category: str) -> int:
     """Check for sequence of following integers"""
     # Define the target sequences and scores in a dictionary
@@ -138,9 +138,9 @@ def check_straight(values: List[int], category: str) -> int:
         # categories and return the appropriate result
         if all(element in values for element in target_sequence):
             return score
-        return 0
+    return 0
 
-# Calculate the right score from the diceset and selected category.
+# Calculate the right score from the dice set and selected category.
 # Most if not all the calculations are done through the functions
 # above
 def calculate_score(dice_values: List[int], category: str) -> int:
@@ -169,15 +169,15 @@ def save_score(name, score):
 
     # Check if the path is valid
     if os.path.isfile(path):
-        #Opening the file as appending
-        with open(path, "a", encoding = 'utf8', newline="") as f:
-            # Using a csv writer to right the name and score
+        # Opening the file as appending
+        with open(path, "a", encoding='utf8', newline="") as f:
+            # Using a csv writer to write the name and score
             writer = csv.writer(f)
             writer.writerow([name, score])
     else:
-        # If its the first time playing and there is no such file,
+        # If it's the first time playing and there is no such file,
         # create file and write the score
-        with open(path, "x", encoding = 'utf8', newline= "") as f:
+        with open(path, "x", encoding='utf8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([name, score])
     # Confirmation message of successful saving
@@ -212,7 +212,7 @@ def read_score(times: int):
             for player, scores in dic.items():
                 scores.sort(reverse=True)
 
-            # sort the players depending on the scores and add as tuple in the list
+            # Sort the players depending on the scores and add as tuple in the list
             sorted_scores = sorted(
                 [(player, score) for player, scores in dic.items() for score in scores],
                 key=lambda item: item[1],
@@ -225,7 +225,7 @@ def read_score(times: int):
                 if count == times:
                     break
                 print(f"{player}: {score}")
-    # If its the first time playing and there are no records
+    # If it's the first time playing and there are no records
     else:
         print("Highscore not available yet")
 
@@ -252,7 +252,7 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
     # numbers as values.
     category_numbers = {'ones': 1, 'twos': 2, 'threes': 3, 'fours': 4, 'fives': 5, 'sixes': 6}
 
-    #we iteratte over the dictionary with category name and values pairs
+    # We iterate over the dictionary with category name and value pairs
     for category, number in category_numbers.items():
 
         # If the number is in counts
@@ -264,119 +264,76 @@ def decide_eligible_categories(game_type, dice_values, used, unused):
             eligible_categories.append(category)
 
     # We check if there are any pairs.
-    #
-    # We do this by using any() which returns
-    # True if ANY value is True.
-    # Hence we check if any element in the iteration
-    # meets the condition.
-    #
-    # Meaning if any counts.value is greater than
-    # or equal to 2 the first half of the condition
-    # is met.
-    #
-    # Finally we just check if "one_pair" also not in
-    # used_categories.
-    #
-    # If both conditions are met, we append it to the
-    # eligible list.
-    if (any(count >= 2 for count in counts.values())
-        and "one pair" not in used):
-
-        # If so we append "one_pair" to the
-        # eligible_categories.
+    if any(count >= 2 for count in counts.values()) and "one pair" not in used:
+        # Append "one pair" to the eligible categories
         eligible_categories.append("one pair")
 
-    # Here we check the other types of potential categories.
-    # Here specifically two pairs.
+    # Collect numbers that occur two or more times
     pairs = [num for num, count in counts.items() if count >= 2]
+
+    # Check for "two pairs"
     if len(pairs) >= 2 and "two pairs" not in used:
         eligible_categories.append("two pairs")
 
-    # similar code as above, we just check for 3 pairs
-    # only in maxi yatzy
-    pairs = [num for num, count in counts.items() if count >= 2]
-    if len(pairs) == 3 and "three pairs" not in used and game_type == 2:
+    # Check for "three pairs" (only in Maxi Yatzy)
+    if len(pairs) >= 3 and "three pairs" not in used and game_type == 2:
         eligible_categories.append("three pairs")
 
-    # Here we check if there is three of the same
-    # value.
+    # Check for "three of a kind"
     if any(count >= 3 for count in counts.values()) and "three of a kind" not in used:
         eligible_categories.append("three of a kind")
 
-    # Here we check if there is four of the same
-    # value.
+    # Check for "four of a kind"
     if any(count >= 4 for count in counts.values()) and "four of a kind" not in used:
         eligible_categories.append("four of a kind")
 
-    # Five of a kind (only in maxiYatzy)
-    if any(count >= 5 for count in counts.values()) and "five of a kind" not in used:
-        if game_type == 2:
-            eligible_categories.append("five of a kind")
+    # Check for "five of a kind" (only in Maxi Yatzy)
+    if any(count >= 5 for count in counts.values()) and "five of a kind" not in used and game_type == 2:
+        eligible_categories.append("five of a kind")
 
-    # Using this condition we can see if
-    # there is a full house.
-    # Since we need to have 2 of one num
-    # and 3 of another num.
-    # (and special case for maxi yatzy)
-    # If that condition is met, we know that there
-    # is a full house of some kind.
-    if sorted(counts.values()) in ([2, 3], [1, 2, 3]) and "full house" not in used:
-        if (game_type == 1 and sorted(counts.values()) == [2, 3]) or (game_type == 2 and sorted(counts.values()) == [1, 2, 3]):
-            eligible_categories.append("full house")
+    # Get sorted list of counts for checking combinations
+    counts_values = sorted(counts.values())
 
+    # Check for "full house"
+    if counts_values == [2, 3] and "full house" not in used:
+        eligible_categories.append("full house")
 
-    # Similar code as above but checking for Villa (two triplets)
-    if sorted(counts.values()) == [3, 3] and "villa" not in used:
-        if game_type == 2:
-            eligible_categories.append("villa")
+    # Check for "villa" (only in Maxi Yatzy)
+    if counts_values == [3, 3] and "villa" not in used and game_type == 2:
+        eligible_categories.append("villa")
 
-    # Tower (exactly one pair and one four of a kind)
-    if sorted(counts.values()) == [2, 4] and "tower" not in used:
-        if game_type == 2:
-            eligible_categories.append("tower")
+    # Check for "tower" (only in Maxi Yatzy)
+    if counts_values == [2, 4] and "tower" not in used and game_type == 2:
+        eligible_categories.append("tower")
 
-    # Here we check if we have a small straight.
-    # We do this by checking if all unique_values
-    # are in the list [1, 2, 3, 4, 5]
+    # Check for "small straight"
     if all(num in unique_values for num in [1, 2, 3, 4, 5]) and "small straight" not in used:
         eligible_categories.append("small straight")
 
-    # similar code but for Large Straight (2-6 sequence)
+    # Check for "large straight"
     if all(num in unique_values for num in [2, 3, 4, 5, 6]) and "large straight" not in used:
         eligible_categories.append("large straight")
 
-    # and for Full Straight (1-6 sequence)
-    if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full straight" not in used:
-        if game_type == 2:
-            eligible_categories.append("full straight")
+    # Check for "full straight" (only in Maxi Yatzy)
+    if all(num in unique_values for num in [1, 2, 3, 4, 5, 6]) and "full straight" not in used and game_type == 2:
+        eligible_categories.append("full straight")
 
-    # Here if uniquie values == 1, it means that
-    # all dices where the same.
-    #
-    # Hence we are eligible for a yatzy.
+    # Check for "yatzy"
     if len(unique_values) == 1 and "yatzy" not in used:
         eligible_categories.append("yatzy")
 
-    # Chance should always be available
-    # if it hasn't been used yet.
-    #
-    # Hence we only check if it's been used.
+    # "Chance" should always be available if not used yet
     if "chance" not in used:
         eligible_categories.append("chance")
 
-    # Finally we iterate over the eligible categories
-    # We check if the current element is in self.categories
-    #
-    # If the condition is met, the category is kept in the
-    # new list. If not, it is removed.
+    # Filter eligible categories to ensure they are in the game's category list
     eligible_categories = [cat for cat in eligible_categories if cat in unused]
 
-    # We finally return the eligible
-    # categories as a list.
+    # Return the list of eligible categories
     return eligible_categories
 
 # Function to print out a list of categories in pairs of two
-# side by side for asthetic purposes
+# side by side for aesthetic purposes
 def print_cat(categories: list) -> None:
     """Print the list of categories for eligible and removal"""
     # We iterate over the eligible_categories list two elements at a time.
@@ -387,7 +344,7 @@ def print_cat(categories: list) -> None:
 
             # Display two categories side by side.
             display_message(
-                f"[{i+1}] - {categories[i]:<15}\t"\
+                f"[{i+1}] - {categories[i]:<15}\t"
                 f"[{i+2}] - {categories[i + 1]:<15}")
         else:
             # If only one category remains, display it alone.
