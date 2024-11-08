@@ -262,7 +262,7 @@ class Controller:
                             # Check if the range is right
                             if select <= len(not_eligible):
                                 # Get the category name from the list
-                                category = eligible_categories[int(select) - 1]
+                                category = not_eligible[int(select) - 1]
                                 # Record a score of zero for the removed category.
                                 player.scorecard.record_scores(category, 0)
                                 # Check if a category was removed, and display appropriate message.
