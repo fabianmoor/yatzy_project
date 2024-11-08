@@ -266,7 +266,7 @@ class Controller:
                                 # Record a score of zero for the removed category.
                                 player.scorecard.record_scores(category, 0)
                                 # Check if a category was removed, and display appropriate message.
-                                display_message(f"Category '{not_eligible[category - 1]}' removed. ")
+                                display_message(f"Category '{not_eligible[select - 1]}' removed. ")
                                 break
                             print_error()
                         except ValueError:
