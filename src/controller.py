@@ -256,11 +256,13 @@ class Controller:
                         print_cat(not_eligible)
                         try:
                             # Prompt the player to select a category to remove.
-                            category = int(get_input("\nWhich category would you like "\
+                            select = int(get_input("\nWhich category would you like "\
                                                         "to remove: (ex. 3)"))
 
                             # Check if the range is right
-                            if category <= len(not_eligible):
+                            if select <= len(not_eligible):
+                                # Get the category name from the list
+                                category = eligible_categories[int(select) - 1]
                                 # Record a score of zero for the removed category.
                                 player.scorecard.record_scores(category, 0)
                                 # Check if a category was removed, and display appropriate message.
